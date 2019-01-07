@@ -8,10 +8,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
 using System.Xml;
-using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using NetEbics.Config;
 using NetEbics.Exceptions;

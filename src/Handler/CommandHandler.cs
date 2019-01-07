@@ -12,7 +12,6 @@ using NetEbics.Config;
 using NetEbics.Parameters;
 using NetEbics.Responses;
 using System;
-using ebics = ebicsxml.H004;
 
 namespace NetEbics.Handler
 {

@@ -10,11 +10,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
-using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using NetEbics.Exceptions;
 using NetEbics.Parameters;
 using NetEbics.Responses;
+using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
@@ -51,18 +51,18 @@ namespace NetEbics.Commands
                     //    SignKeys = Config.User.SignKeys,
                     //    Namespaces = Namespaces
                     //};
-                    var userSigData = new ebicsxml.H004.SignaturePubKeyOrderDataType
+                    var userSigData = new ebics.SignaturePubKeyOrderDataType
                     {
                         PartnerID = Config.User.PartnerId,
                         UserID = Config.User.UserId,
-                        SignaturePubKeyInfo = new ebicsxml.H004.SignaturePubKeyInfoType
+                        SignaturePubKeyInfo = new ebics.SignaturePubKeyInfoType
                         {
                             SignatureVersion = "A005",
-                            PubKeyValue = new ebicsxml.H004.PubKeyValueType1
+                            PubKeyValue = new ebics.PubKeyValueType1
                             {
                                 TimeStamp = DateTime.UtcNow,
                                 TimeStampSpecified = true,
-                                RSAKeyValue = new ebicsxml.H004.RSAKeyValueType
+                                RSAKeyValue = new ebics.RSAKeyValueType
                                 {
                                     Modulus = Config.User.SignKeys.Modulus,
                                     Exponent = Config.User.SignKeys.Exponent
@@ -77,29 +77,29 @@ namespace NetEbics.Commands
                         Compress(
                             Encoding.UTF8.GetBytes(doc));
                     //var b64encoded = Convert.ToBase64String(compressed);
-                    var req = new ebicsxml.H004.ebicsUnsecuredRequest
+                    var req = new ebics.ebicsUnsecuredRequest
                     {
-                        header = new ebicsxml.H004.ebicsUnsecuredRequestHeader
+                        header = new ebics.ebicsUnsecuredRequestHeader
                         {
-                            @static = new ebicsxml.H004.UnsecuredRequestStaticHeaderType
+                            @static = new ebics.UnsecuredRequestStaticHeaderType
                             {
                                 HostID = Config.User.HostId,
                                 PartnerID = Config.User.PartnerId,
                                 UserID=Config.User.UserId,
                                 SecurityMedium = Params.SecurityMedium,
-                                OrderDetails = new ebicsxml.H004.UnsecuredReqOrderDetailsType
+                                OrderDetails = new ebics.UnsecuredReqOrderDetailsType
                                 {
                                     OrderType = OrderType,
                                     OrderAttribute = OrderAttribute
                                 }
                             },
-                            mutable = new ebicsxml.H004.EmptyMutableHeaderType(),
+                            mutable = new ebics.EmptyMutableHeaderType(),
                         },
-                        body = new ebicsxml.H004.ebicsUnsecuredRequestBody
+                        body = new ebics.ebicsUnsecuredRequestBody
                         {
-                            DataTransfer = new ebicsxml.H004.ebicsUnsecuredRequestBodyDataTransfer
+                            DataTransfer = new ebics.ebicsUnsecuredRequestBodyDataTransfer
                             {
-                                OrderData = new ebicsxml.H004.ebicsUnsecuredRequestBodyDataTransferOrderData
+                                OrderData = new ebics.ebicsUnsecuredRequestBodyDataTransferOrderData
                                 {
                                     Value = compressed
                                 }

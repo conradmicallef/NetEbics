@@ -7,7 +7,6 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -20,7 +19,6 @@ using System.Xml.Linq;
 using Ionic.Zlib;
 using Microsoft.Extensions.Logging;
 using NetEbics.Config;
-using NetEbics.Exceptions;
 using NetEbics.Handler;
 using NetEbics.Responses;
 using ebics = ebicsxml.H004;
@@ -97,7 +95,7 @@ namespace NetEbics.Commands
         }
         protected XmlDocument XMLSerializeToDocument<T>(T o, params Type[] types)
         {
-            return ToDocument(XMLSerialize<T>(o, types));
+            return ToDocument(XMLSerialize(o, types));
         }
 
         internal virtual DeserializeResponse Deserialize_ebicsKeyManagementResponse(string payload)
@@ -364,7 +362,7 @@ namespace NetEbics.Commands
             doc.LoadXml(v);
             return CanonicalizeAndDigest(doc.SelectNodes("*"));
         }
-        protected static ebicsxml.H004.SignatureType Sign(XmlDocument doc, System.Security.Cryptography.RSA signKey)
+        protected static ebics.SignatureType Sign(XmlDocument doc, RSA signKey)
         {
             const string _digestAlg = "http://www.w3.org/2001/04/xmlenc#sha256";
             const string _signAlg = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
@@ -373,42 +371,42 @@ namespace NetEbics.Commands
             const string DefaultReferenceUri = "#xpointer(//*[@authenticate='true'])";
             var nodeList = doc.SelectNodes("//*[@authenticate='true']");
             var digest = CanonicalizeAndDigest(nodeList);
-            var ret = new ebicsxml.H004.SignatureType()
+            var ret = new ebics.SignatureType()
             {
-                SignedInfo = new ebicsxml.H004.SignedInfoType
+                SignedInfo = new ebics.SignedInfoType
                 {
-                    CanonicalizationMethod = new ebicsxml.H004.CanonicalizationMethodType
+                    CanonicalizationMethod = new ebics.CanonicalizationMethodType
                     {
                         Algorithm = _canonAlg
                     },
-                    SignatureMethod = new ebicsxml.H004.SignatureMethodType
+                    SignatureMethod = new ebics.SignatureMethodType
                     {
                         Algorithm = _signAlg
                     },
-                    Reference = new ebicsxml.H004.ReferenceType[]
+                    Reference = new ebics.ReferenceType[]
                     {
-                        new ebicsxml.H004.ReferenceType
+                        new ebics.ReferenceType
                         {
-                            DigestMethod=new ebicsxml.H004.DigestMethodType { Algorithm=_digestAlg},
+                            DigestMethod=new ebics.DigestMethodType { Algorithm=_digestAlg},
                             DigestValue=digest,
-                            Transforms=new ebicsxml.H004.TransformType[]
+                            Transforms=new ebics.TransformType[]
                             {
-                                new ebicsxml.H004.TransformType{Algorithm=_canonAlg},
+                                new ebics.TransformType{Algorithm=_canonAlg},
                             },
                             URI=DefaultReferenceUri
                         }
                     }
                 }
             };
-            var xmlserializer = new System.Xml.Serialization.XmlSerializer(typeof(ebicsxml.H004.SignedInfoType));
+            var xmlserializer = new System.Xml.Serialization.XmlSerializer(typeof(ebics.SignedInfoType));
             var sb = new StringBuilder();
             using (var sw = new Utf8StringWriter(sb))
                 xmlserializer.Serialize(sw, ret.SignedInfo);
             var _digest = CanonicalizeAndDigest(sb.ToString());
-            ret.SignatureValue = new ebicsxml.H004.SignatureValueType { Value = signKey.SignHash(_digest, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1) };
+            ret.SignatureValue = new ebics.SignatureValueType { Value = signKey.SignHash(_digest, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1) };
             return ret;
         }
-        protected static void VerifySignature(XmlDocument doc, System.Security.Cryptography.RSA signKey)
+        protected static void VerifySignature(XmlDocument doc, RSA signKey)
         {
             const string _digestAlg = "http://www.w3.org/2001/04/xmlenc#sha256";
             const string _signAlg = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
@@ -418,10 +416,10 @@ namespace NetEbics.Commands
             var nodeList = doc.SelectNodes("//*[@authenticate='true']");
             var digest = CanonicalizeAndDigest(nodeList);
             var signatureXml = doc.SelectSingleNode("//*[local-name()='AuthSignature']");
-            var xmlserializer = new System.Xml.Serialization.XmlSerializer(typeof(ebicsxml.H004.SignatureType));
-            ebicsxml.H004.SignatureType signature;
+            var xmlserializer = new System.Xml.Serialization.XmlSerializer(typeof(ebics.SignatureType));
+            ebics.SignatureType signature;
             using (var sr = new StringReader(signatureXml.OuterXml))
-                signature = (ebicsxml.H004.SignatureType)xmlserializer.Deserialize(sr);
+                signature = (ebics.SignatureType)xmlserializer.Deserialize(sr);
             if (signature.SignedInfo.CanonicalizationMethod.Algorithm != _canonAlg)
                 throw new Exception("invalid canon alg");
             if (signature.SignedInfo.SignatureMethod.Algorithm != _signAlg)
@@ -437,7 +435,7 @@ namespace NetEbics.Commands
             if (reference.DigestValue.SequenceEqual(digest) == false)
                 throw new Exception("invalid digest");
             var sb = new StringBuilder();
-            xmlserializer = new System.Xml.Serialization.XmlSerializer(typeof(ebicsxml.H004.SignedInfoType));
+            xmlserializer = new System.Xml.Serialization.XmlSerializer(typeof(ebics.SignedInfoType));
             using (var sw = new Utf8StringWriter(sb))
                 xmlserializer.Serialize(sw, signature.SignedInfo);
             var _digest = CanonicalizeAndDigest(sb.ToString());

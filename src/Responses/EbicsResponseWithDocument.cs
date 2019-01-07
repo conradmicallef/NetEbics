@@ -6,9 +6,7 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-using System;
 using System.Xml.Linq;
-using NetEbics.Config;
 
 namespace NetEbics.Responses
 {
