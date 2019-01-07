@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -19,6 +20,7 @@ using System.Xml.Linq;
 using Ionic.Zlib;
 using Microsoft.Extensions.Logging;
 using NetEbics.Config;
+using NetEbics.Exceptions;
 using NetEbics.Handler;
 using NetEbics.Responses;
 using ebics = ebicsxml.H004;
@@ -52,23 +54,26 @@ namespace NetEbics.Commands
 
         protected T XMLDeserialize<T>(string payload, params Type[] types)
         {
-            System.Xml.Serialization.XmlSerializer x = 
-                (types!=null && types.Any()) 
-                ? new System.Xml.Serialization.XmlSerializer(typeof(T),types)
+            System.Xml.Serialization.XmlSerializer x =
+                (types != null && types.Any())
+                ? new System.Xml.Serialization.XmlSerializer(typeof(T), types)
                 : new System.Xml.Serialization.XmlSerializer(typeof(T));
             using (var reader = new StringReader(payload))
                 return (T)x.Deserialize(reader);
         }
         string XMLSerialize<T>(T o, params Type[] types)
         {
+//            System.Xml.Serialization.XmlSerializerNamespaces ns = new System.Xml.Serialization.XmlSerializerNamespaces();
+//            ns.Add("ds", "http://www.w3.org/2000/09/xmldsig#");
             System.Xml.Serialization.XmlSerializer x =
                 (types != null && types.Any())
                 ? new System.Xml.Serialization.XmlSerializer(typeof(T), types)
                 : new System.Xml.Serialization.XmlSerializer(typeof(T));
-            var xw = new XmlWriterSettings {
-                Encoding=System.Text.Encoding.UTF8,
-                OmitXmlDeclaration=true,
-                Indent=true
+            var xw = new XmlWriterSettings
+            {
+                Encoding = System.Text.Encoding.UTF8,
+                OmitXmlDeclaration = true,
+                Indent = false
             };
             var sb = new StringBuilder();
             using (var writer = XmlWriter.Create(sb, xw))
@@ -79,18 +84,18 @@ namespace NetEbics.Commands
         {
             var x = new XmlDocument() { PreserveWhitespace = true };
             x.LoadXml(s);
-/*            var nm = new XmlNamespaceManager(x.NameTable);
-            nm.AddNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            foreach (XmlNode node in x.SelectNodes("//*[@xsi:type]",nm))
-            {
-                node.Attributes.RemoveNamedItem("xsi:type");
-            }
-            foreach (XmlNode node in x.SelectNodes("//*[@xsi:nil='true']",nm))
-            {
-                node.ParentNode.RemoveChild(node);
-            }
-            x.DocumentElement.Attributes.RemoveNamedItem("xmlns:xsd");
-            x.DocumentElement.Attributes.RemoveNamedItem("xmlns:xsi");*/
+            /*            var nm = new XmlNamespaceManager(x.NameTable);
+                        nm.AddNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                        foreach (XmlNode node in x.SelectNodes("//*[@xsi:type]",nm))
+                        {
+                            node.Attributes.RemoveNamedItem("xsi:type");
+                        }
+                        foreach (XmlNode node in x.SelectNodes("//*[@xsi:nil='true']",nm))
+                        {
+                            node.ParentNode.RemoveChild(node);
+                        }
+                        x.DocumentElement.Attributes.RemoveNamedItem("xmlns:xsd");
+                        x.DocumentElement.Attributes.RemoveNamedItem("xmlns:xsi");*/
             return x;
         }
         protected XmlDocument XMLSerializeToDocument<T>(T o, params Type[] types)
@@ -98,11 +103,11 @@ namespace NetEbics.Commands
             return ToDocument(XMLSerialize(o, types));
         }
 
-        internal virtual DeserializeResponse Deserialize_ebicsKeyManagementResponse(string payload)
+        internal virtual DeserializeResponse Deserialize_ebicsKeyManagementResponse(string payload, out ebics.ebicsKeyManagementResponse ebr)
         {
             using (new MethodLogger(s_logger))
             {
-                var ebr = XMLDeserialize<ebics.ebicsKeyManagementResponse>(payload);
+                ebr = XMLDeserialize<ebics.ebicsKeyManagementResponse>(payload);
                 int.TryParse(ebr.header.mutable.ReturnCode, out var techCode);
                 int.TryParse(ebr.body.ReturnCode.Value, out var busCode);
                 var dr = new DeserializeResponse
@@ -111,18 +116,18 @@ namespace NetEbics.Commands
                     TechnicalReturnCode = techCode,
                     ReportText = ebr.header.mutable.ReportText
                 };
-                
+
                 s_logger.LogDebug("DeserializeResponse: {response}", dr);
                 return dr;
             }
         }
         internal abstract DeserializeResponse Deserialize(string payload);
-        internal virtual DeserializeResponse Deserialize_ebicsResponse(string payload,out ebics.ebicsResponse ebr)
+        internal virtual DeserializeResponse Deserialize_ebicsResponse(string payload, out ebics.ebicsResponse ebr)
         {
             using (new MethodLogger(s_logger))
             {
                 //var doc = XDocument.Parse(payload);
-                ebr=XMLDeserialize<ebics.ebicsResponse>(payload);
+                ebr = XMLDeserialize<ebics.ebicsResponse>(payload);
                 int.TryParse(ebr.header.mutable.ReturnCode, out var techCode);
                 int.TryParse(ebr.body.ReturnCode.Value, out var busCode);
                 int.TryParse(ebr.header.@static.NumSegments, out var numSegments);
@@ -141,10 +146,36 @@ namespace NetEbics.Commands
                     Phase = transPhase,
                     ReportText = ebr.header.mutable.ReportText
                 };
-                
+
                 s_logger.LogDebug("DeserializeResponse: {response}", dr);
                 return dr;
             }
+        }
+        protected byte[] DecryptOrderData(ebics.ebicsKeyManagementResponseBodyDataTransfer dt)
+        {
+            using (new MethodLogger(s_logger))
+            {
+                var encryptedOd = dt.OrderData.Value;
+                if (dt.DataEncryptionInfo.EncryptionPubKeyDigest.Algorithm != "http://www.w3.org/2001/04/xmlenc#sha256" ||
+                    dt.DataEncryptionInfo.EncryptionPubKeyDigest.Version != "E002")
+                    throw new DeserializationException("Encryption version {0} not supported");
+
+
+                var encryptionPubKeyDigest = dt.DataEncryptionInfo.EncryptionPubKeyDigest.Value;
+                var encryptedTransKey = dt.DataEncryptionInfo.TransactionKey;
+
+                var transKey = DecryptRsa(encryptedTransKey);
+                var decryptedOd = DecryptAES(encryptedOd, transKey);
+
+                if (!StructuralComparisons.StructuralEqualityComparer.Equals(Config.User.CryptKeys.Digest,
+                    encryptionPubKeyDigest))
+                {
+                    throw new DeserializationException("Wrong digest in xml");
+                }
+
+                return decryptedOd;
+            }
+
         }
 
         //protected byte[] DecryptOrderData(Xml.XPathHelper xph)
@@ -322,7 +353,7 @@ namespace NetEbics.Commands
             }
         }
 
-        static byte[] CanonicalizeAndDigest(XmlNodeList nodeList)
+        byte[] CanonicalizeAndDigest(XmlNodeList nodeList)
         {
             var encoding = System.Text.Encoding.UTF8;
             var transform = new XmlDsigC14NTransform();
@@ -356,13 +387,13 @@ namespace NetEbics.Commands
             }
             return SHA256.Create().ComputeHash(encoding.GetBytes(outersb.ToString()));
         }
-        protected private static byte[] CanonicalizeAndDigest(string v)
-        {
-            var doc = new XmlDocument() { PreserveWhitespace = true };
-            doc.LoadXml(v);
-            return CanonicalizeAndDigest(doc.SelectNodes("*"));
-        }
-        protected static ebics.SignatureType Sign(XmlDocument doc, RSA signKey)
+        //protected private byte[] CanonicalizeAndDigest(string v)
+        //{
+        //    var doc = new XmlDocument() { PreserveWhitespace = true };
+        //    doc.LoadXml(v);
+        //    return CanonicalizeAndDigest(doc.SelectNodes("*"));
+        //}
+        protected void Sign(XmlDocument doc, RSA signKey)
         {
             const string _digestAlg = "http://www.w3.org/2001/04/xmlenc#sha256";
             const string _signAlg = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
@@ -371,19 +402,17 @@ namespace NetEbics.Commands
             const string DefaultReferenceUri = "#xpointer(//*[@authenticate='true'])";
             var nodeList = doc.SelectNodes("//*[@authenticate='true']");
             var digest = CanonicalizeAndDigest(nodeList);
-            var ret = new ebics.SignatureType()
+            var signedInfo = new ebics.SignedInfoType
             {
-                SignedInfo = new ebics.SignedInfoType
+                CanonicalizationMethod = new ebics.CanonicalizationMethodType
                 {
-                    CanonicalizationMethod = new ebics.CanonicalizationMethodType
-                    {
-                        Algorithm = _canonAlg
-                    },
-                    SignatureMethod = new ebics.SignatureMethodType
-                    {
-                        Algorithm = _signAlg
-                    },
-                    Reference = new ebics.ReferenceType[]
+                    Algorithm = _canonAlg
+                },
+                SignatureMethod = new ebics.SignatureMethodType
+                {
+                    Algorithm = _signAlg
+                },
+                Reference = new ebics.ReferenceType[]
                     {
                         new ebics.ReferenceType
                         {
@@ -396,17 +425,41 @@ namespace NetEbics.Commands
                             URI=DefaultReferenceUri
                         }
                     }
-                }
             };
-            var xmlserializer = new System.Xml.Serialization.XmlSerializer(typeof(ebics.SignedInfoType));
-            var sb = new StringBuilder();
-            using (var sw = new Utf8StringWriter(sb))
-                xmlserializer.Serialize(sw, ret.SignedInfo);
-            var _digest = CanonicalizeAndDigest(sb.ToString());
-            ret.SignatureValue = new ebics.SignatureValueType { Value = signKey.SignHash(_digest, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1) };
-            return ret;
+            XmlNamespaceManager nm = new XmlNamespaceManager(doc.NameTable);
+            nm.AddNamespace("ds", "http://www.w3.org/2000/09/xmldsig#");
+            var str = XMLSerializeToDocument(signedInfo);
+            var _digest = CanonicalizeAndDigest(str.SelectNodes("//*[local-name()='SignedInfo']"));
+            var signaturevalue = signKey.SignHash(_digest, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+#if false
+            var authsig = doc.SelectSingleNode("//*[local-name()='AuthSignature']");
+            authsig.AppendChild(doc.ImportNode(str.DocumentElement,true));
+            var sigval = doc.CreateNode(XmlNodeType.Element, "SignatureValue", "ds");
+            sigval.AppendChild(doc.CreateTextNode(Convert.ToBase64String(signaturevalue)));
+            authsig.AppendChild(sigval);
+#else
+
+            var signature = new ebics.SignatureType { SignedInfo = signedInfo };
+            signature.SignatureValue = new ebics.SignatureValueType { Value = signaturevalue };
+            var sigdoc = XMLSerializeToDocument(signature);
+            var oldchild = doc.SelectSingleNode("//*[local-name()='AuthSignature']");
+            if (oldchild != null)
+            {
+#if true
+                var newChild = doc.ImportNode(sigdoc.DocumentElement, true);
+                oldchild.ParentNode.ReplaceChild(newChild, oldchild);
+#else
+                foreach (XmlNode n in sigdoc.DocumentElement.ChildNodes)
+                            {
+                                oldchild.AppendChild(doc.ImportNode(n, true));
+                            }
+#endif
+            }
+            else throw new NotImplementedException();
+#endif
+
         }
-        protected static void VerifySignature(XmlDocument doc, RSA signKey)
+        protected void VerifySignature(XmlDocument doc, RSA signKey)
         {
             const string _digestAlg = "http://www.w3.org/2001/04/xmlenc#sha256";
             const string _signAlg = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
@@ -434,28 +487,27 @@ namespace NetEbics.Commands
                 throw new Exception("invalid transform");
             if (reference.DigestValue.SequenceEqual(digest) == false)
                 throw new Exception("invalid digest");
-            var sb = new StringBuilder();
-            xmlserializer = new System.Xml.Serialization.XmlSerializer(typeof(ebics.SignedInfoType));
-            using (var sw = new Utf8StringWriter(sb))
-                xmlserializer.Serialize(sw, signature.SignedInfo);
-            var _digest = CanonicalizeAndDigest(sb.ToString());
+            var sigdoc = XMLSerializeToDocument(signature);
+            //var sb = new StringBuilder();
+            //xmlserializer = new System.Xml.Serialization.XmlSerializer(typeof(ebics.SignedInfoType));
+            //using (var sw = new Utf8StringWriter(sb))
+            //    xmlserializer.Serialize(sw, signature.SignedInfo);
+            var _digest = CanonicalizeAndDigest(sigdoc.SelectNodes("//*[local-name()='SignedInfo']"));
             if (signKey.VerifyHash(_digest, signature.SignatureValue.Value, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1) == false)
                 throw new Exception("invalid signature");
         }
         protected XmlDocument Authenticate(ebics.ebicsNoPubKeyDigestsRequest initReq)
         {
+            initReq.AuthSignature = new ebics.SignatureType {   SignatureValue=new ebics.SignatureValueType { } };
             var doc = XMLSerializeToDocument(initReq);
-            var sig = Sign(doc, Config.User.SignKeys.PrivateKey);
-            initReq.AuthSignature = sig;
-            doc.LoadXml(XMLSerialize(initReq));
+            Sign(doc, Config.User.AuthKeys.PrivateKey);
             return doc;
         }
         protected XmlDocument Authenticate(ebics.ebicsRequest initReq, Type type)
         {
+            initReq.AuthSignature = new ebics.SignatureType { SignatureValue = new ebics.SignatureValueType { } };
             var doc = XMLSerializeToDocument(initReq, type);
-            var sig = Sign(doc, Config.User.SignKeys.PrivateKey);
-            initReq.AuthSignature = sig;
-            doc.LoadXml(XMLSerialize(initReq, type));
+            Sign(doc, Config.User.AuthKeys.PrivateKey);
             return doc;
         }
         //protected XmlDocument Authenticate(XmlDocument doc, params Type[] types)
@@ -580,13 +632,13 @@ namespace NetEbics.Commands
             xmlStr = xmlStr.Replace("\t", "");
             return xmlStr;
         }
-        protected XElement SignData(XDocument doc,UserParams up)
+        protected XElement SignData(XDocument doc, UserParams up)
         {
             var xmlStr = FormatXml(doc);
 
             var userSigData = new ebics.UserSignatureDataSigBookType
             {
-                Items=new object[] {
+                Items = new object[] {
                     new ebics.OrderSignatureDataType[]{
                         new ebics.OrderSignatureDataType
                         {
@@ -602,19 +654,20 @@ namespace NetEbics.Commands
         protected string SerializeToString(object o, params Type[] types)
         {
             var sb = new StringBuilder();
-            using (var sw = new Utf8StringWriter(sb)) {
-                System.Xml.Serialization.XmlSerializer xs = (types==null)
+            using (var sw = new Utf8StringWriter(sb))
+            {
+                System.Xml.Serialization.XmlSerializer xs = (types == null)
                     ? new System.Xml.Serialization.XmlSerializer(o.GetType())
                     : new System.Xml.Serialization.XmlSerializer(o.GetType(), types);
                 xs.Serialize(sw, o);
                 return sb.ToString();
             }
         }
-        protected XDocument SerializeToDocument(object o,params Type[]types)
+        protected XDocument SerializeToDocument(object o, params Type[] types)
         {
-            return XDocument.Parse(SerializeToString(o,types));
+            return XDocument.Parse(SerializeToString(o, types));
         }
-        protected XElement SignData(ebics.UserSignatureDataSigBookType sd,byte[] data, SignKeyPair kp)
+        protected XElement SignData(ebics.UserSignatureDataSigBookType sd, byte[] data, SignKeyPair kp)
         {
             var sig = SignData(data, kp);
             var s = sd.Items.OfType<ebics.OrderSignatureDataType>().Last();

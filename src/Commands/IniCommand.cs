@@ -32,7 +32,7 @@ namespace NetEbics.Commands
 
         internal override DeserializeResponse Deserialize(string payload)
         {
-            var dr = Deserialize_ebicsKeyManagementResponse(payload);
+            var dr = Deserialize_ebicsKeyManagementResponse(payload,out var ebr);
             UpdateResponse(Response, dr);
             return dr;
         }
@@ -86,6 +86,14 @@ namespace NetEbics.Commands
                                 HostID = Config.User.HostId,
                                 PartnerID = Config.User.PartnerId,
                                 UserID=Config.User.UserId,
+#if DEBUG
+                                Product=new ebics.ProductElementType
+                                {
+                                    InstituteID="BL Banking",
+                                    Language="EN",
+                                    Value="BL Banking"
+                                },
+#endif
                                 SecurityMedium = Params.SecurityMedium,
                                 OrderDetails = new ebics.UnsecuredReqOrderDetailsType
                                 {
