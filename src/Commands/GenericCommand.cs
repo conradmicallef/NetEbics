@@ -32,14 +32,14 @@ namespace NetEbics.Commands
             set => _response = value;
         }
 
-        internal override DeserializeResponse Deserialize(string payload)
-        {
-            using (new MethodLogger(s_logger))
-            {
-                var dr = base.Deserialize(payload);
-                UpdateResponse(Response, dr);
-                return dr;
-            }
-        }
+        //internal override DeserializeResponse Deserialize(string payload)
+        //{
+        //    using (new MethodLogger(s_logger))
+        //    {
+        //        var dr = base.Deserialize(payload);
+        //        UpdateResponse(Response, dr);
+        //        return dr;
+        //    }
+        //}
     }
 }

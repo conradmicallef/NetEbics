@@ -11,6 +11,8 @@ using NetEbics.Commands;
 using NetEbics.Config;
 using NetEbics.Parameters;
 using NetEbics.Responses;
+using System;
+using ebics = ebicsxml.H004;
 
 namespace NetEbics.Handler
 {
@@ -32,10 +34,16 @@ namespace NetEbics.Handler
 
                 switch (cmdParams)
                 {
+                    case IniParams ini:
+                        cmd = new IniCommand { Params = ini, Config = Config, Namespaces = Namespaces };
+                        break;
+                    case HiaParams hia:
+                        cmd = new HiaCommand { Params = hia, Config = Config, Namespaces = Namespaces };
+                        break;
                     case HpbParams hpb:
                         cmd = new HpbCommand {Params = hpb, Config = Config, Namespaces = Namespaces};
                         break;
-                    case PtkParams ptk:
+/*                    case PtkParams ptk:
                         cmd = new PtkCommand {Params = ptk, Config = Config, Namespaces = Namespaces};
                         break;
                     case CctParams cct:
@@ -47,15 +55,20 @@ namespace NetEbics.Handler
                     case SprParams spr:
                         cmd = new SprCommand {Params = spr, Config = Config, Namespaces = Namespaces};
                         break;
-                    case IniParams ini:
-                        cmd = new IniCommand {Params = ini, Config = Config, Namespaces = Namespaces};
-                        break;
-                    case HiaParams hia:
-                        cmd = new HiaCommand {Params = hia, Config = Config, Namespaces = Namespaces};
-                        break;
                     case CddParams cdd:
                         cmd = new CddCommand {Params = cdd, Config = Config, Namespaces = Namespaces};
                         break;
+                    case EbicsParams<ebics.HVDOrderParamsType> hvd:
+                        cmd = new HvdCommand { Params = hvd, Config = Config, Namespaces = Namespaces };
+                        break;
+                    case EbicsParams<ebics.HVUOrderParamsType> hvu:
+                        cmd = new HvuCommand { Params = hvu, Config = Config, Namespaces = Namespaces };
+                        break;
+                    case EbicsParams<ebics.HVZOrderParamsType> hvz:
+                        cmd = new HvzCommand { Params = hvz, Config = Config, Namespaces = Namespaces };
+                        break;*/
+                    default:
+                        throw new NotImplementedException();
                 }
 
                 s_logger.LogDebug("Command created: {cmd}", cmd?.ToString());

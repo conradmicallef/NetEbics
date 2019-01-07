@@ -21,6 +21,13 @@ namespace NetEbics
             provider.GetBytes(bnonce);
             return BitConverter.ToString(bnonce).Replace("-", "");
         }
+        internal static byte[] GetNonceBinary()
+        {
+            var provider = new RNGCryptoServiceProvider();
+            var bnonce = new byte[16];
+            provider.GetBytes(bnonce);
+            return bnonce;
+        }
 
         internal static byte[] GetTransactionKey()
         {

@@ -13,12 +13,13 @@ using NetEbics.Config;
 using NetEbics.Handler;
 using NetEbics.Parameters;
 using NetEbics.Responses;
+using ebics = ebicsxml.H004;
 
 namespace NetEbics
 {
     public class EbicsClientFactory
     {
-        private Func<EbicsConfig, IEbicsClient> _ctor;
+        private readonly Func<EbicsConfig, IEbicsClient> _ctor;
 
         public EbicsClientFactory(Func<EbicsConfig, IEbicsClient> ctor)
         {
@@ -50,17 +51,6 @@ namespace NetEbics
                 _protocolHandler.Client = _httpClient;
                 _commandHandler.ProtocolHandler = _protocolHandler;
                 var nsCfg = new NamespaceConfig();
-                switch (_config.Version)
-                {
-                    case EbicsVersion.H004:
-                        nsCfg.Ebics = $"urn:org:ebics:{EbicsVersion.H004.ToString()}";
-                        break;
-                    case EbicsVersion.H005:
-                        nsCfg.Ebics = $"urn:org:ebics:{EbicsVersion.H005.ToString()}";
-                        break;
-                    default:
-                        throw new ArgumentException(nameof(Config.Version));
-                }
 
                 nsCfg.XmlDsig = "http://www.w3.org/2000/09/xmldsig#";
                 nsCfg.Cct = "urn:iso:std:iso:20022:tech:xsd:pain.001.001.03";
@@ -150,6 +140,31 @@ namespace NetEbics
             using (new MethodLogger(Logger))
             {
                 var resp = _commandHandler.Send<CddResponse>(p);
+                return resp;
+            }
+        }
+
+        public EbicsResponseWithDocument<ebics.HVZResponseOrderDataType> HVZ(EbicsParams<ebics.HVZOrderParamsType> p)
+        {
+            using (new MethodLogger(Logger))
+            {
+                var resp = _commandHandler.Send<EbicsResponseWithDocument<ebics.HVZResponseOrderDataType>>(p);
+                return resp;
+            }
+        }
+        public EbicsResponseWithDocument<ebics.HVUResponseOrderDataType> HVU(EbicsParams<ebics.HVUOrderParamsType> p)
+        {
+            using (new MethodLogger(Logger))
+            {
+                var resp = _commandHandler.Send<EbicsResponseWithDocument<ebics.HVUResponseOrderDataType>>(p);
+                return resp;
+            }
+        }
+        public EbicsResponseWithDocument<ebics.HVDResponseOrderDataType> HVD(EbicsParams<ebics.HVDOrderParamsType> p)
+        {
+            using (new MethodLogger(Logger))
+            {
+                var resp = _commandHandler.Send<EbicsResponseWithDocument<ebics.HVDResponseOrderDataType>>(p);
                 return resp;
             }
         }

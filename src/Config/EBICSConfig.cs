@@ -20,9 +20,6 @@ namespace NetEbics.Config
         public bool Insecure { get; set; }
         public UserParams User { get; set; }
         public BankParams Bank { get; set; }
-        public EbicsVersion Version { get; set; } = EbicsVersion.H004;
-        public EbicsRevision Revision { get; set; } = EbicsRevision.Rev1;
-
 
         static EbicsConfig()
         {

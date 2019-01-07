@@ -9,6 +9,7 @@
 using NetEbics.Config;
 using NetEbics.Parameters;
 using NetEbics.Responses;
+using ebics = ebicsxml.H004;
 
 namespace NetEbics
 {
@@ -23,5 +24,9 @@ namespace NetEbics
         HiaResponse HIA(HiaParams p);
         SprResponse SPR(SprParams p);
         CddResponse CDD(CddParams p);
+
+        EbicsResponseWithDocument<ebics.HVZResponseOrderDataType> HVZ(EbicsParams<ebics.HVZOrderParamsType> p);
+        EbicsResponseWithDocument<ebics.HVUResponseOrderDataType> HVU(EbicsParams<ebics.HVUOrderParamsType> p);
+        EbicsResponseWithDocument<ebics.HVDResponseOrderDataType> HVD(EbicsParams<ebics.HVDOrderParamsType> p);
     }
 }

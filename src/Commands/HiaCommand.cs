@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging;
 using NetEbics.Exceptions;
 using NetEbics.Parameters;
 using NetEbics.Responses;
-using NetEbics.Xml;
 
 namespace NetEbics.Commands
 {
@@ -31,6 +30,13 @@ namespace NetEbics.Commands
         internal override XmlDocument InitRequest => null;
         internal override XmlDocument ReceiptRequest => null;
 
+        internal override DeserializeResponse Deserialize(string payload)
+        {
+            var dr=Deserialize_ebicsKeyManagementResponse(payload);
+            UpdateResponse(Response, dr);
+            return dr;
+        }
+
         private IList<XmlDocument> CreateRequests()
         {
             using (new MethodLogger(s_logger))
@@ -38,66 +44,131 @@ namespace NetEbics.Commands
                 try
                 {
                     var reqs = new List<XmlDocument>();
-
-                    var hiaOrderData = new HiaRequestOrderData
+                    var h = new ebicsxml.H004.HIARequestOrderDataType
                     {
-                        Namespaces = Namespaces,
-                        PartnerId = Config.User.PartnerId,
-                        UserId = Config.User.UserId,
-                        AuthInfo = new AuthenticationPubKeyInfo
+                        PartnerID = Config.User.PartnerId,
+                        UserID = Config.User.UserId,
+                        AuthenticationPubKeyInfo = new ebicsxml.H004.AuthenticationPubKeyInfoType
                         {
-                            Namespaces = Namespaces,
-                            AuthKeys = Config.User.AuthKeys,
-                            UseEbicsDefaultNamespace = true
+                            AuthenticationVersion = "A002",
+                            PubKeyValue = new ebicsxml.H004.PubKeyValueType
+                            {
+                                TimeStamp = DateTime.UtcNow,
+                                TimeStampSpecified = true,
+                                RSAKeyValue = new ebicsxml.H004.RSAKeyValueType
+                                {
+                                    Modulus = Config.User.AuthKeys.Modulus,
+                                    Exponent = Config.User.AuthKeys.Exponent
+                                }
+                            }
                         },
-                        EncInfo = new EncryptionPubKeyInfo
+                        EncryptionPubKeyInfo = new ebicsxml.H004.EncryptionPubKeyInfoType
                         {
-                            Namespaces = Namespaces,
-                            CryptKeys = Config.User.CryptKeys,
-                            UseEbicsDefaultNamespace = true
+                            EncryptionVersion = "E002",
+                            PubKeyValue = new ebicsxml.H004.PubKeyValueType
+                            {
+                                TimeStamp = DateTime.UtcNow,
+                                TimeStampSpecified = true,
+                                RSAKeyValue = new ebicsxml.H004.RSAKeyValueType
+                                {
+                                    Modulus = Config.User.CryptKeys.Modulus,
+                                    Exponent = Config.User.CryptKeys.Exponent
+                                }
+                            }
                         }
                     };
 
+                    //var hiaOrderData = new HiaRequestOrderData
+                    //{
+                    //    Namespaces = Namespaces,
+                    //    PartnerId = Config.User.PartnerId,
+                    //    UserId = Config.User.UserId,
+                    //    AuthInfo = new AuthenticationPubKeyInfo
+                    //    {
+                    //        Namespaces = Namespaces,
+                    //        AuthKeys = Config.User.AuthKeys,
+                    //        UseEbicsDefaultNamespace = true
+                    //    },
+                    //    EncInfo = new EncryptionPubKeyInfo
+                    //    {
+                    //        Namespaces = Namespaces,
+                    //        CryptKeys = Config.User.CryptKeys,
+                    //        UseEbicsDefaultNamespace = true
+                    //    }
+                    //};
+
                     var compressed =
                         Compress(Encoding.UTF8.GetBytes(
-                            hiaOrderData.Serialize().ToString(SaveOptions.DisableFormatting)));
+                            XMLSerializeToDocument(h).OuterXml));
                     var b64Encoded = Convert.ToBase64String(compressed);
 
-                    var req = new EbicsUnsecuredRequest
+                    var req = new ebicsxml.H004.ebicsUnsecuredRequest
                     {
-                        StaticHeader = new StaticHeader
+                        header=new ebicsxml.H004.ebicsUnsecuredRequestHeader
                         {
-                            HostId = Config.User.HostId,
-                            PartnerId = Config.User.PartnerId,
-                            UserId = Config.User.UserId,
-                            SecurityMedium = Params.SecurityMedium,
-                            Namespaces = Namespaces,
-                            OrderDetails = new OrderDetails
+                            @static=new ebicsxml.H004.UnsecuredRequestStaticHeaderType
                             {
-                                OrderType = OrderType,
-                                OrderAttribute = OrderAttribute,
-                                Namespaces = Namespaces
-                            }
+                                HostID=Config.User.HostId,
+                                PartnerID=Config.User.PartnerId,
+                                UserID=Config.User.UserId,
+                                SecurityMedium=Params.SecurityMedium,
+                                OrderDetails=new ebicsxml.H004.UnsecuredReqOrderDetailsType
+                                {
+                                    OrderType=OrderType,
+                                    OrderAttribute=OrderAttribute
+                                }
+                            },
+                            mutable=new ebicsxml.H004.EmptyMutableHeaderType { },
                         },
-                        MutableHeader = new MutableHeader
+                        body=new ebicsxml.H004.ebicsUnsecuredRequestBody
                         {
-                            Namespaces = Namespaces
-                        },
-                        Body = new Body
-                        {
-                            Namespaces = Namespaces,
-                            DataTransfer = new DataTransfer
+                            DataTransfer=new ebicsxml.H004.ebicsUnsecuredRequestBodyDataTransfer
                             {
-                                OrderData = b64Encoded,
-                                Namespaces = Namespaces
+                                OrderData=new ebicsxml.H004.ebicsUnsecuredRequestBodyDataTransferOrderData
+                                {
+                                    Value=compressed
+                                }
                             }
+                            
                         },
-                        Namespaces = Namespaces,
-                        Version = Config.Version,
-                        Revision = Config.Revision,
+                        Version="H004",
+                        Revision="1"
                     };
+                    //var req = new EbicsUnsecuredRequest
+                    //{
+                    //    StaticHeader = new StaticHeader
+                    //    {
+                    //        HostId = Config.User.HostId,
+                    //        PartnerId = Config.User.PartnerId,
+                    //        UserId = Config.User.UserId,
+                    //        SecurityMedium = Params.SecurityMedium,
+                    //        Namespaces = Namespaces,
+                    //        OrderDetails = new OrderDetails
+                    //        {
+                    //            OrderType = OrderType,
+                    //            OrderAttribute = OrderAttribute,
+                    //            Namespaces = Namespaces
+                    //        }
+                    //    },
+                    //    MutableHeader = new MutableHeader
+                    //    {
+                    //        Namespaces = Namespaces
+                    //    },
+                    //    Body = new Body
+                    //    {
+                    //        Namespaces = Namespaces,
+                    //        DataTransfer = new DataTransfer
+                    //        {
+                    //            OrderData = b64Encoded,
+                    //            Namespaces = Namespaces
+                    //        }
+                    //    },
+                    //    Namespaces = Namespaces,
+                    //    Version = Config.Version,
+                    //    Revision = Config.Revision,
+                    //};
 
-                    reqs.Add(req.Serialize().ToXmlDocument());
+                    reqs.Add(XMLSerializeToDocument(req));
                     return reqs;
                 }
                 catch (EbicsException)

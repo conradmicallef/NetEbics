@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackageId>NetEbics</PackageId>
     <VersionPrefix>0.1.0</VersionPrefix>
     <Authors>Bjoern Kuensting</Authors>
@@ -16,13 +16,62 @@
     <DebugType>none</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BouncyCastle.NetCore" Version="1.8.1.3" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.0-rc1-final" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.0-rc1-final" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0-rc1-final" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.0-rc1-final" />
-    <PackageReference Include="StatePrinter" Version="3.0.1" />
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="4.5.0-rc1" />
-    <PackageReference Include="Zlib.Portable" Version="1.11.0" />
+    <Compile Remove="src\Commands\CctCommand.cs" />
+    <Compile Remove="src\Commands\CddCommand.cs" />
+    <Compile Remove="src\Commands\HvdCommand.cs" />
+    <Compile Remove="src\Commands\HvuCommand.cs" />
+    <Compile Remove="src\Commands\HvzCommand.cs" />
+    <Compile Remove="src\Commands\PtkCommand.cs" />
+    <Compile Remove="src\Commands\SprCommand.cs" />
+    <Compile Remove="src\Commands\StaCommand.cs" />
+    <Compile Remove="src\Xml\AuthenticationPubKeyInfo.cs" />
+    <Compile Remove="src\Xml\BankPubKeyDigests.cs" />
+    <Compile Remove="src\Xml\Body.cs" />
+    <Compile Remove="src\Xml\CustomSignedXml.cs" />
+    <Compile Remove="src\Xml\DataEncryptionInfo.cs" />
+    <Compile Remove="src\Xml\DataTransfer.cs" />
+    <Compile Remove="src\Xml\EbicsNoPubKeyDigestsRequest.cs" />
+    <Compile Remove="src\Xml\EbicsRequest.cs" />
+    <Compile Remove="src\Xml\EbicsUnsecuredRequest.cs" />
+    <Compile Remove="src\Xml\EmptyOrderParams.cs" />
+    <Compile Remove="src\Xml\EncryptionPubKeyDigest.cs" />
+    <Compile Remove="src\Xml\EncryptionPubKeyInfo.cs" />
+    <Compile Remove="src\Xml\HiaRequestOrderData.cs" />
+    <Compile Remove="src\Xml\IXDocumentSerializer.cs" />
+    <Compile Remove="src\Xml\IXElementSerializer.cs" />
+    <Compile Remove="src\Xml\MutableHeader.cs" />
+    <Compile Remove="src\Xml\NamespaceAware.cs" />
+    <Compile Remove="src\Xml\OrderDetails.cs" />
+    <Compile Remove="src\Xml\OrderSignatureData.cs" />
+    <Compile Remove="src\Xml\SignatureData.cs" />
+    <Compile Remove="src\Xml\SignaturePubKeyOrderData.cs" />
+    <Compile Remove="src\Xml\StartEndDateOrderParams.cs" />
+    <Compile Remove="src\Xml\StaticHeader.cs" />
+    <Compile Remove="src\Xml\TransferReceipt.cs" />
+    <Compile Remove="src\Xml\UserSignatureData.cs" />
+    <Compile Remove="src\Xml\XDocumentExtensions.cs" />
+    <Compile Remove="src\Xml\XmlNames.cs" />
+    <Compile Remove="src\Xml\XPathHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.NetCore" Version="1.8.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.2.0" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\StatePrinter\StatePrinter\StatePrinter.csproj" />
+    <ProjectReference Include="..\Zlib.Portable\src\Zlib.Portable\Zlib.Portable.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="src\Xsd\H005\ebics_H005.xsd">
+      <Generator>xsd</Generator>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src\Xml\" />
+    <Folder Include="src\Xsd\H004\" />
   </ItemGroup>
 </Project>

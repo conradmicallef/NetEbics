@@ -17,7 +17,7 @@ using NetEbics.Config;
 using NetEbics.Exceptions;
 using NetEbics.Parameters;
 using NetEbics.Responses;
-using NetEbics.Xml;
+using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
@@ -40,96 +40,99 @@ namespace NetEbics.Commands
             {
                 using (new MethodLogger(s_logger))
                 {
-                    var dr = base.Deserialize(payload);
+                    var dr = base.Deserialize_ebicsResponse(payload,out var ebr);
 
-                    var doc = XDocument.Parse(payload);
-                    var xph = new XPathHelper(doc, Namespaces);
+
 
                     Response.Bank = new BankParams();
 
-                    Response.OrderId = xph.GetOrderID()?.Value;
-                    Response.TimestampBankParameter = ParseTimestamp(xph.GetTimestampBankParameter()?.Value);
+                    Response.OrderId = ebr.header.mutable.OrderID;
+                    Response.TimestampBankParameter = ebr.body.TimestampBankParameter.Value;
 
                     if (dr.HasError)
                     {
                         return dr;
                     }
+                    throw new NotImplementedException();
 
-                    var decryptedOd = DecryptOrderData(xph);
-                    var deflatedOd = Decompress(decryptedOd);
-                    var strResp = Encoding.UTF8.GetString(deflatedOd);
-                    var hpbrod = XDocument.Parse(strResp);
+                    //DecryptAES(ebr.body.DataTransfer.OrderData.Value, _transactionKey);
+                    //def
 
-                    s_logger.LogDebug("Order data:\n{orderData}", hpbrod.ToString());
+                    //var decryptedOd = DecryptOrderData(xph);
+                    //var deflatedOd = Decompress(decryptedOd);
+                    //var strResp = Encoding.UTF8.GetString(deflatedOd);
+                    //var hpbrod = XDocument.Parse(strResp);
 
-                    var r = new XPathHelper(hpbrod, Namespaces);
+                    //s_logger.LogDebug("Order data:\n{orderData}", hpbrod.ToString());
 
-                    if (r.GetAuthenticationPubKeyInfoX509Data() != null || r.GetEncryptionPubKeyInfoX509Data() != null)
-                    {
-                        throw new DeserializationException("X509 not supported yet", payload);
-                    }
+                    //var r = new XPathHelper(hpbrod, Namespaces);
 
-                    if (r.GetAuthenticationPubKeyInfoPubKeyValue() != null)
-                    {
-                        if (!Enum.TryParse<AuthVersion>(r.GetAuthenticationPubKeyInfoAuthenticationVersion()?.Value,
-                            out var authVersion))
-                        {
-                            throw new DeserializationException(
-                                "unknown authentication version for bank's authentication key");
-                        }
+                    //if (r.GetAuthenticationPubKeyInfoX509Data() != null || r.GetEncryptionPubKeyInfoX509Data() != null)
+                    //{
+                    //    throw new DeserializationException("X509 not supported yet", payload);
+                    //}
 
-                        var modulus =
-                            Convert.FromBase64String(r.GetAuthenticationPubKeyInfoModulus()?.Value);
-                        var exponent =
-                            Convert.FromBase64String(r.GetAuthenticationPubKeyInfoExponent()?.Value);
+                    //if (r.GetAuthenticationPubKeyInfoPubKeyValue() != null)
+                    //{
+                    //    if (!Enum.TryParse<AuthVersion>(r.GetAuthenticationPubKeyInfoAuthenticationVersion()?.Value,
+                    //        out var authVersion))
+                    //    {
+                    //        throw new DeserializationException(
+                    //            "unknown authentication version for bank's authentication key");
+                    //    }
 
-                        var authPubKeyParams = new RSAParameters {Exponent = exponent, Modulus = modulus};
-                        var authPubKey = RSA.Create();
-                        authPubKey.ImportParameters(authPubKeyParams);
-                        Response.Bank.AuthKeys = new AuthKeyPair
-                        {
-                            PublicKey = authPubKey,
-                            Version = authVersion
-                        };
-                    }
-                    else
-                    {
-                        throw new DeserializationException($"{XmlNames.AuthenticationPubKeyInfo} missing", payload);
-                    }
+                    //    var modulus =
+                    //        Convert.FromBase64String(r.GetAuthenticationPubKeyInfoModulus()?.Value);
+                    //    var exponent =
+                    //        Convert.FromBase64String(r.GetAuthenticationPubKeyInfoExponent()?.Value);
 
-                    if (r.GetEncryptionPubKeyInfoPubKeyValue() != null)
-                    {
-                        if (!Enum.TryParse<CryptVersion>(r.GetEncryptionPubKeyInfoEncryptionVersion()?.Value,
-                            out var encryptionVersion))
-                        {
-                            throw new DeserializationException("unknown encryption version for bank's encryption key");
-                        }
+                    //    var authPubKeyParams = new RSAParameters {Exponent = exponent, Modulus = modulus};
+                    //    var authPubKey = RSA.Create();
+                    //    authPubKey.ImportParameters(authPubKeyParams);
+                    //    Response.Bank.AuthKeys = new AuthKeyPair
+                    //    {
+                    //        PublicKey = authPubKey,
+                    //        Version = authVersion
+                    //    };
+                    //}
+                    //else
+                    //{
+                    //    throw new DeserializationException($"{XmlNames.AuthenticationPubKeyInfo} missing", payload);
+                    //}
 
-                        var modulus =
-                            Convert.FromBase64String(r.GetEncryptionPubKeyInfoModulus()?.Value);
-                        var exponent =
-                            Convert.FromBase64String(r.GetEncryptionPubKeyInfoExponent()?.Value);
+                    //if (r.GetEncryptionPubKeyInfoPubKeyValue() != null)
+                    //{
+                    //    if (!Enum.TryParse<CryptVersion>(r.GetEncryptionPubKeyInfoEncryptionVersion()?.Value,
+                    //        out var encryptionVersion))
+                    //    {
+                    //        throw new DeserializationException("unknown encryption version for bank's encryption key");
+                    //    }
 
-                        var cryptPubKeyParams = new RSAParameters {Exponent = exponent, Modulus = modulus};
-                        var cryptPubKey = RSA.Create();
-                        cryptPubKey.ImportParameters(cryptPubKeyParams);
-                        Response.Bank.CryptKeys = new CryptKeyPair
-                        {
-                            PublicKey = cryptPubKey,
-                            Version = encryptionVersion
-                        };
-                    }
-                    else
-                    {
-                        throw new DeserializationException($"{XmlNames.EncryptionPubKeyInfo} missing", payload);
-                    }
+                    //    var modulus =
+                    //        Convert.FromBase64String(r.GetEncryptionPubKeyInfoModulus()?.Value);
+                    //    var exponent =
+                    //        Convert.FromBase64String(r.GetEncryptionPubKeyInfoExponent()?.Value);
 
-                    s_logger.LogDebug("Bank authentication key digest: {digest}",
-                        CryptoUtils.Print(Response.Bank?.AuthKeys?.Digest));
-                    s_logger.LogDebug("Bank encryption key digest: {digest}",
-                        CryptoUtils.Print(Response.Bank?.CryptKeys?.Digest));
+                    //    var cryptPubKeyParams = new RSAParameters {Exponent = exponent, Modulus = modulus};
+                    //    var cryptPubKey = RSA.Create();
+                    //    cryptPubKey.ImportParameters(cryptPubKeyParams);
+                    //    Response.Bank.CryptKeys = new CryptKeyPair
+                    //    {
+                    //        PublicKey = cryptPubKey,
+                    //        Version = encryptionVersion
+                    //    };
+                    //}
+                    //else
+                    //{
+                    //    throw new DeserializationException($"{XmlNames.EncryptionPubKeyInfo} missing", payload);
+                    //}
 
-                    return dr;
+                    //s_logger.LogDebug("Bank authentication key digest: {digest}",
+                    //    CryptoUtils.Print(Response.Bank?.AuthKeys?.Digest));
+                    //s_logger.LogDebug("Bank encryption key digest: {digest}",
+                    //    CryptoUtils.Print(Response.Bank?.CryptKeys?.Digest));
+
+                    //return dr;
                 }
             }
             catch (EbicsException)
@@ -150,38 +153,31 @@ namespace NetEbics.Commands
                 {
                     var reqs = new List<XmlDocument>();
 
-                    var req = new EbicsNoPubKeyDigestsRequest
+                    var req = new ebics.ebicsNoPubKeyDigestsRequest
                     {
-                        StaticHeader = new StaticHeader
+                        header=new ebics.ebicsNoPubKeyDigestsRequestHeader
                         {
-                            HostId = Config.User.HostId,
-                            Nonce = CryptoUtils.GetNonce(),
-                            Timestamp = CryptoUtils.GetUtcTimeNow(),
-                            PartnerId = Config.User.PartnerId,
-                            UserId = Config.User.UserId,
-                            SecurityMedium = Params.SecurityMedium,
-                            Namespaces = Namespaces,
-                            OrderDetails = new OrderDetails
+                            @static=new ebics.NoPubKeyDigestsRequestStaticHeaderType
                             {
-                                OrderType = OrderType,
-                                OrderAttribute = OrderAttribute,
-                                Namespaces = Namespaces
-                            }
+                                HostID=Config.User.HostId,
+                                Nonce=CryptoUtils.GetNonceBinary(),
+                                PartnerID=Config.User.PartnerId,
+                                UserID=Config.User.UserId,
+                                SecurityMedium=Params.SecurityMedium,
+                                OrderDetails=new ebics.NoPubKeyDigestsReqOrderDetailsType
+                                {
+                                    OrderType = OrderType,
+                                    OrderAttribute = OrderAttribute,
+                                }
+                            },
+                            mutable=new ebics.EmptyMutableHeaderType { },
                         },
-                        MutableHeader = new MutableHeader
-                        {
-                            Namespaces = Namespaces
-                        },
-                        Body = new Body
-                        {
-                            Namespaces = Namespaces
-                        },
-                        Version = Config.Version,
-                        Revision = Config.Revision,
-                        Namespaces = Namespaces
+                        body=new ebics.ebicsNoPubKeyDigestsRequestBody { },
+                        Version = "H004",
+                        Revision = "1"
                     };
 
-                    reqs.Add(AuthenticateXml(req.Serialize().ToXmlDocument(), null, null));
+                    reqs.Add(Authenticate(req));
                     return reqs;
                 }
                 catch (Exception e)

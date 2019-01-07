@@ -10,6 +10,6 @@ namespace NetEbics
 {
     public enum EbicsRevision
     {
-        Rev1
+        Rev1=1
     }
 }

@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging;
 using NetEbics.Exceptions;
 using NetEbics.Parameters;
 using NetEbics.Responses;
-using NetEbics.Xml;
 
 namespace NetEbics.Commands
 {
@@ -31,6 +30,13 @@ namespace NetEbics.Commands
         internal override XmlDocument InitRequest => null;
         internal override XmlDocument ReceiptRequest => null;
 
+        internal override DeserializeResponse Deserialize(string payload)
+        {
+            var dr = Deserialize_ebicsKeyManagementResponse(payload);
+            UpdateResponse(Response, dr);
+            return dr;
+        }
+
         private IList<XmlDocument> CreateRequests()
         {
             using (new MethodLogger(s_logger))
@@ -38,56 +44,106 @@ namespace NetEbics.Commands
                 try
                 {
                     var reqs = new List<XmlDocument>();
-                    var userSigData = new SignaturePubKeyOrderData
+                    //var userSigData = new SignaturePubKeyOrderData
+                    //{
+                    //    PartnerId = Config.User.PartnerId,
+                    //    UserId = Config.User.UserId,
+                    //    SignKeys = Config.User.SignKeys,
+                    //    Namespaces = Namespaces
+                    //};
+                    var userSigData = new ebicsxml.H004.SignaturePubKeyOrderDataType
                     {
-                        PartnerId = Config.User.PartnerId,
-                        UserId = Config.User.UserId,
-                        SignKeys = Config.User.SignKeys,
-                        Namespaces = Namespaces
+                        PartnerID = Config.User.PartnerId,
+                        UserID = Config.User.UserId,
+                        SignaturePubKeyInfo = new ebicsxml.H004.SignaturePubKeyInfoType
+                        {
+                            SignatureVersion = "A005",
+                            PubKeyValue = new ebicsxml.H004.PubKeyValueType1
+                            {
+                                TimeStamp = DateTime.UtcNow,
+                                TimeStampSpecified = true,
+                                RSAKeyValue = new ebicsxml.H004.RSAKeyValueType
+                                {
+                                    Modulus = Config.User.SignKeys.Modulus,
+                                    Exponent = Config.User.SignKeys.Exponent
+                                }
+                            }
+                        },
                     };
-
-                    s_logger.LogDebug("User signature data:\n{data}", userSigData.Serialize().ToString());
+                    var doc = XMLSerializeToDocument(userSigData).OuterXml;
+                    s_logger.LogDebug("User signature data:\n{data}", doc);
 
                     var compressed =
                         Compress(
-                            Encoding.UTF8.GetBytes(userSigData.Serialize().ToString(SaveOptions.DisableFormatting)));
-                    var b64encoded = Convert.ToBase64String(compressed);
-
-                    var req = new EbicsUnsecuredRequest
+                            Encoding.UTF8.GetBytes(doc));
+                    //var b64encoded = Convert.ToBase64String(compressed);
+                    var req = new ebicsxml.H004.ebicsUnsecuredRequest
                     {
-                        StaticHeader = new StaticHeader
+                        header = new ebicsxml.H004.ebicsUnsecuredRequestHeader
                         {
-                            HostId = Config.User.HostId,
-                            PartnerId = Config.User.PartnerId,
-                            UserId = Config.User.UserId,
-                            SecurityMedium = Params.SecurityMedium,
-                            Namespaces = Namespaces,
-                            OrderDetails = new OrderDetails
+                            @static = new ebicsxml.H004.UnsecuredRequestStaticHeaderType
                             {
-                                OrderType = OrderType,
-                                OrderAttribute = OrderAttribute,
-                                Namespaces = Namespaces
+                                HostID = Config.User.HostId,
+                                PartnerID = Config.User.PartnerId,
+                                UserID=Config.User.UserId,
+                                SecurityMedium = Params.SecurityMedium,
+                                OrderDetails = new ebicsxml.H004.UnsecuredReqOrderDetailsType
+                                {
+                                    OrderType = OrderType,
+                                    OrderAttribute = OrderAttribute
+                                }
+                            },
+                            mutable = new ebicsxml.H004.EmptyMutableHeaderType(),
+                        },
+                        body = new ebicsxml.H004.ebicsUnsecuredRequestBody
+                        {
+                            DataTransfer = new ebicsxml.H004.ebicsUnsecuredRequestBodyDataTransfer
+                            {
+                                OrderData = new ebicsxml.H004.ebicsUnsecuredRequestBodyDataTransferOrderData
+                                {
+                                    Value = compressed
+                                }
                             }
                         },
-                        MutableHeader = new MutableHeader
-                        {
-                            Namespaces = Namespaces
-                        },
-                        Body = new Body
-                        {
-                            Namespaces = Namespaces,
-                            DataTransfer = new DataTransfer
-                            {
-                                OrderData = b64encoded,
-                                Namespaces = Namespaces
-                            }
-                        },
-                        Version = Config.Version,
-                        Revision = Config.Revision,
-                        Namespaces = Namespaces
-                    };
+                        Version="H004",
+                        Revision="1"
 
-                    reqs.Add(req.Serialize().ToXmlDocument());
+                    };
+                    //var req = new EbicsUnsecuredRequest
+                    //{
+                    //    StaticHeader = new StaticHeader
+                    //    {
+                    //        HostId = Config.User.HostId,
+                    //        PartnerId = Config.User.PartnerId,
+                    //        UserId = Config.User.UserId,
+                    //        SecurityMedium = Params.SecurityMedium,
+                    //        Namespaces = Namespaces,
+                    //        OrderDetails = new OrderDetails
+                    //        {
+                    //            OrderType = OrderType,
+                    //            OrderAttribute = OrderAttribute,
+                    //            Namespaces = Namespaces
+                    //        }
+                    //    },
+                    //    MutableHeader = new MutableHeader
+                    //    {
+                    //        Namespaces = Namespaces
+                    //    },
+                    //    Body = new Body
+                    //    {
+                    //        Namespaces = Namespaces,
+                    //        DataTransfer = new DataTransfer
+                    //        {
+                    //            OrderData = b64encoded,
+                    //            Namespaces = Namespaces
+                    //        }
+                    //    },
+                    //    Version = Config.Version,
+                    //    Revision = Config.Revision,
+                    //    Namespaces = Namespaces
+                    //};
+
+                    reqs.Add(XMLSerializeToDocument(req));
                     return reqs;
                 }
                 catch (EbicsException)

@@ -54,6 +54,30 @@ namespace NetEbics.Config
             get => _publicKey;
             set => _publicKey = value;
         }
+        public byte[] Modulus
+        {
+            get
+            {
+                if (_publicKey == null)
+                {
+                    return null;
+                }
+                var p = _publicKey.ExportParameters(false);
+                return p.Modulus;
+            }
+        }
+        public byte[] Exponent
+        {
+            get
+            {
+                if (_publicKey == null)
+                {
+                    return null;
+                }
+                var p = _publicKey.ExportParameters(false);
+                return p.Exponent;
+            }
+        }
 
         public byte[] Digest
         {
