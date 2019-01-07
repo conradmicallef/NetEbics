@@ -17,15 +17,18 @@ namespace NetEbics.Config
         private static readonly Stateprinter _printer;
         protected static string s_signatureAlg => "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
         protected static string s_digestAlg => "http://www.w3.org/2001/04/xmlenc#sha256";
-        internal ebics.StaticHeaderTypeBankPubKeyDigests pubkeydigests { get
+        internal ebics.StaticHeaderTypeBankPubKeyDigests pubkeydigests
+        {
+            get
             {
                 return new ebics.StaticHeaderTypeBankPubKeyDigests
                 {
-                    Authentication = new ebics.StaticHeaderTypeBankPubKeyDigestsAuthentication { Algorithm = s_digestAlg, Version = AuthKeys.Version.ToString(), Value = AuthKeys.Digest },
-                    Encryption= new ebics.StaticHeaderTypeBankPubKeyDigestsEncryption{ Algorithm = s_digestAlg, Version = AuthKeys.Version.ToString(), Value = AuthKeys.Digest },
-                    Signature=new ebics.StaticHeaderTypeBankPubKeyDigestsSignature{ Algorithm = s_digestAlg, Version = AuthKeys.Version.ToString(), Value = AuthKeys.Digest }
+                    Authentication = AuthKeys != null ? new ebics.StaticHeaderTypeBankPubKeyDigestsAuthentication { Algorithm = s_digestAlg, Version = AuthKeys.Version.ToString(), Value = AuthKeys.Digest } : null,
+                    Encryption = CryptKeys != null ? new ebics.StaticHeaderTypeBankPubKeyDigestsEncryption { Algorithm = s_digestAlg, Version = CryptKeys.Version.ToString(), Value = CryptKeys.Digest } : null,
+                    Signature = SignKeys != null ? new ebics.StaticHeaderTypeBankPubKeyDigestsSignature { Algorithm = s_digestAlg, Version = SignKeys.Version.ToString(), Value = SignKeys.Digest } : null
                 };
-            } }
+            }
+        }
 
         public AuthKeyPair AuthKeys { get; set; }
         public CryptKeyPair CryptKeys { get; set; }

@@ -168,5 +168,13 @@ namespace NetEbics
                 return resp;
             }
         }
+        public EbicsResponseWithDocument<ebics.HTDReponseOrderDataType> HTD(EbicsParams<ebics.StandardOrderParamsType> p)
+        {
+            using (new MethodLogger(Logger))
+            {
+                var resp = _commandHandler.Send<EbicsResponseWithDocument<ebics.HTDReponseOrderDataType>>(p);
+                return resp;
+            }
+        }
     }
 }

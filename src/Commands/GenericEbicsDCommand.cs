@@ -8,7 +8,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
@@ -21,42 +21,19 @@ using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
-    internal abstract class GenericEbicsDCommand<ResponseType,RequestType> : Command 
+    internal abstract class GenericEbicsDCommand<ResponseType, RequestType> : GenericCommand<EbicsResponseWithDocument<ResponseType>>,IDisposable
     {
         private static readonly ILogger s_logger = EbicsLogging.CreateLogger<GenericCommand<EbicsResponseWithDocument<ResponseType>>>();
-
-        protected EbicsResponseWithDocument<ResponseType> _response;
-
-        internal EbicsResponseWithDocument<ResponseType> Response
-        {
-            get
-            {
-                if (_response == null)
-                {
-                    _response = Activator.CreateInstance<EbicsResponseWithDocument<ResponseType>>();
-                }
-
-                return _response;
-            }
-            set => _response = value;
-        }
-
-        //internal override DeserializeResponse Deserialize(string payload)
-        //{
-        //    using (new MethodLogger(s_logger))
-        //    {
-        //        var dr = base.Deserialize(payload);
-        //        UpdateResponse(this.Response, dr);
-        //        return dr;
-        //    }
-        //}
-
-        private string _transactionId;
+        private byte[] _transactionID;
 
         internal EbicsParams<RequestType> Params { private get; set; }
-        internal override IList<XmlDocument> Requests => CreateRequests();
-        internal override XmlDocument InitRequest => null;
-        internal override XmlDocument ReceiptRequest => null;
+        internal override TransactionType TransactionType => TransactionType.Download;
+        internal override IList<XmlDocument> Requests => null;
+        internal override XmlDocument InitRequest => CreateInitRequest();
+        internal override XmlDocument ReceiptRequest => CreateReceiptRequest();
+
+
+        public readonly MemoryStream ms = new MemoryStream();
 
         public GenericEbicsDCommand()
         {
@@ -97,22 +74,33 @@ namespace NetEbics.Commands
             {
                 using (new MethodLogger(s_logger))
                 {
-                    var dr = base.Deserialize_ebicsResponse(payload,out var ebr);
-                    //var doc = XDocument.Parse(payload);
+                    var dr = base.Deserialize_ebicsResponse(payload, out var ebr);
 
                     if (dr.HasError || dr.IsRecoverySync)
                     {
                         return dr;
                     }
 
+                    //do signature validation here
+                    var doc = new XmlDocument { PreserveWhitespace = true };
+                    doc.LoadXml(payload);
+                    //VerifySignature(doc, Config.Bank.AuthKeys.PublicKey);
+
                     if (dr.Phase == TransactionPhase.Initialisation)
                     {
-                        _transactionId = dr.TransactionId;
+                        _transactionID = ebr.header.@static.TransactionID;
                     }
+                    if (dr.Phase == TransactionPhase.Receipt)
+                        return dr;
                     var decryptedOd = DecryptOrderData(ebr.body.DataTransfer);
                     var deflatedOd = Decompress(decryptedOd);
-                    var strResp = Encoding.UTF8.GetString(deflatedOd);
-                    Response.document = XDocument.Parse(strResp);
+                    ms.Write(deflatedOd);
+
+                    if (dr.LastSegment)
+                    {
+                        //compute actual received data
+                        Response.document = ms;
+                    }
 
                     return dr;
                 }
@@ -126,21 +114,61 @@ namespace NetEbics.Commands
                 throw new DeserializationException($"Can't deserialize {OrderType} response", ex, payload);
             }
         }
-        private string FormatXml(XDocument doc)
+        private XmlDocument CreateReceiptRequest()
         {
-            var xmlStr = doc.ToString(SaveOptions.DisableFormatting);
-            xmlStr = xmlStr.Replace("\n", "");
-            xmlStr = xmlStr.Replace("\r", "");
-            xmlStr = xmlStr.Replace("\t", "");
-            return xmlStr;
+            try
+            {
+                var receiptReq = new ebics.ebicsRequest
+                {
+                    Version = "H004",
+                    Revision = "1",
+                    header = new ebics.ebicsRequestHeader
+                    {
+                        authenticate = true,
+                        @static = new ebics.StaticHeaderType
+                        {
+                            HostID = Config.User.HostId,
+                            ItemsElementName = new ebics.ItemsChoiceType3[]
+                            {
+                                ebics.ItemsChoiceType3.TransactionID
+                            },
+                            Items = new object[]
+                            {
+                                _transactionID
+                            },
+                        },
+                        mutable = new ebics.MutableHeaderType
+                        {
+                            TransactionPhase = ebics.TransactionPhaseType.Receipt
+                        },
+                    }
+                    ,
+                    body = new ebics.ebicsRequestBody
+                    {
+                        Items = new object[]{
+                            new ebics.ebicsRequestBodyTransferReceipt
+                    {
+                        authenticate=true,
+                        ReceiptCode="0"
+                    }
+                        }
+                    }
+                };
+
+                return Authenticate(receiptReq);
+            }
+            catch (EbicsException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new CreateRequestException($"can't create receipt request for {OrderType}", ex);
+            }
         }
 
-        private XElement CreateUserSigData(XDocument doc)
-        {
-            return SignData(doc, Config.User);
-        }
 
-        private List<XmlDocument> CreateRequests()
+        private XmlDocument CreateInitRequest()
         {
             using (new MethodLogger(s_logger))
             {
@@ -152,46 +180,53 @@ namespace NetEbics.Commands
                     {
                         Version = "H004",
                         Revision = "1",
-                        header=new ebics.ebicsRequestHeader
+                        header = new ebics.ebicsRequestHeader
                         {
-                            authenticate=true,
-                            @static=new ebics.StaticHeaderType
+                            authenticate = true,
+                            @static = new ebics.StaticHeaderType
                             {
-                                HostID=Config.User.HostId,
-                                ItemsElementName=new ebics.ItemsChoiceType3[]
+                                HostID = Config.User.HostId,
+                                ItemsElementName = new ebics.ItemsChoiceType3[]
                                 {
                                     ebics.ItemsChoiceType3.Nonce,
                                     ebics.ItemsChoiceType3.Timestamp,
                                     ebics.ItemsChoiceType3.PartnerID,
                                     ebics.ItemsChoiceType3.UserID,
-                                    ebics.ItemsChoiceType3.SecurityMedium,
-                                    
+                                    ebics.ItemsChoiceType3.Product,
                                     ebics.ItemsChoiceType3.OrderDetails,
-                                    //ebics.ItemsChoiceType3.BankPubKeyDigests
+                                    ebics.ItemsChoiceType3.BankPubKeyDigests,
+                                    ebics.ItemsChoiceType3.SecurityMedium
                                 },
-                                Items=new object[]
+                                Items = new object[]
                                 {
                                     CryptoUtils.GetNonceBinary(),
                                     DateTime.UtcNow,
                                     Config.User.PartnerId,
                                     Config.User.UserId,
-                                    Params.SecurityMedium,
-                                   
+                                    new ebics.StaticHeaderTypeProduct
+                                    {
+                                        InstituteID = "BL Banking",
+                                        Language = "EN",
+                                        Value = "BL Banking"
+                                    },
                                     new ebics.StaticHeaderOrderDetailsType
                                     {
                                         OrderType=new ebics.StaticHeaderOrderDetailsTypeOrderType{Value=OrderType},
                                         OrderAttribute=(ebics.OrderAttributeType)Enum.Parse(typeof(ebics.OrderAttributeType),this.OrderAttribute),
                                         OrderParams=Params.ebics,
                                     },
-                                    //Config.Bank.pubkeydigests
+                                    Config.Bank.pubkeydigests,
+                                    Params.SecurityMedium,
                                 }
                             },
-                            mutable=new ebics.MutableHeaderType { TransactionPhase=ebics.TransactionPhaseType.Initialisation}
+                            mutable = new ebics.MutableHeaderType { TransactionPhase = ebics.TransactionPhaseType.Initialisation },
+
                         },
+                        body = new ebics.ebicsRequestBody() { }
                     };
 
 
-                    return new List<XmlDocument> { Authenticate(initReq,initReq.GetType()) };
+                    return Authenticate(initReq, Params.ebics?.GetType());
                 }
                 catch (EbicsException)
                 {
@@ -202,6 +237,11 @@ namespace NetEbics.Commands
                     throw new CreateRequestException($"can't create {OrderType} init request", ex);
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            ms.Dispose();
         }
     }
 }

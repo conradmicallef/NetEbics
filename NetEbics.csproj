@@ -20,7 +20,6 @@
     <Compile Remove="src\Commands\CddCommand.cs" />
     <Compile Remove="src\Commands\HvdCommand.cs" />
     <Compile Remove="src\Commands\HvuCommand.cs" />
-    <Compile Remove="src\Commands\HvzCommand.cs" />
     <Compile Remove="src\Commands\PtkCommand.cs" />
     <Compile Remove="src\Commands\SprCommand.cs" />
     <Compile Remove="src\Commands\StaCommand.cs" />

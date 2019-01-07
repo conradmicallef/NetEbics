@@ -10,10 +10,10 @@ using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
-    internal class HvzCommand : GenericEbicsDCommand<ebics.HVZResponseOrderDataType,ebics.HVZOrderParamsType>
+    internal class HtdCommand : GenericEbicsDCommand<ebics.HTDReponseOrderDataType,ebics.StandardOrderParamsType>
     {
-        internal override string OrderType => "HVZ";
-        internal override string OrderAttribute => "DZNNN";
+        internal override string OrderType => "HTD";
+        internal override string OrderAttribute => "DZHNN";
         internal override TransactionType TransactionType => TransactionType.Download;
     }
 }

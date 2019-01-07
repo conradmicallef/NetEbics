@@ -212,7 +212,7 @@ namespace NetEbics.Commands
                                     ebics.ItemsChoiceType3.SecurityMedium,
                                     ebics.ItemsChoiceType3.NumSegments,
                                     ebics.ItemsChoiceType3.OrderDetails,
-                                    //ebics.ItemsChoiceType3.BankPubKeyDigests
+                                    ebics.ItemsChoiceType3.BankPubKeyDigests
                                 },
                                 Items=new object[]
                                 {
@@ -228,7 +228,7 @@ namespace NetEbics.Commands
                                         OrderAttribute=(ebics.OrderAttributeType)Enum.Parse(typeof(ebics.OrderAttributeType),this.OrderAttribute),
                                         OrderParams=Params.ebics,
                                     },
-                                    //Config.Bank.pubkeydigests
+                                    Config.Bank.pubkeydigests
                                 }
                             },
                             mutable=new ebics.MutableHeaderType { TransactionPhase=ebics.TransactionPhaseType.Initialisation}
@@ -245,8 +245,8 @@ namespace NetEbics.Commands
                                             EncryptionPubKeyDigest=new ebics.DataEncryptionInfoTypeEncryptionPubKeyDigest
                                             {
                                                 Algorithm=s_digestAlg,
-                                                //Value=Config.Bank.CryptKeys.Digest,
-                                                //Version=Config.Bank.CryptKeys.Version.ToString()
+                                                Value=Config.Bank.CryptKeys.Digest,
+                                                Version=Config.Bank.CryptKeys.Version.ToString()
                                             },
                                         },
                                         new ebics.DataTransferRequestTypeSignatureData

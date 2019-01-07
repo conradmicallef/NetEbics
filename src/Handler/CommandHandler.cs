@@ -12,6 +12,7 @@ using NetEbics.Config;
 using NetEbics.Parameters;
 using NetEbics.Responses;
 using System;
+using ebics = ebicsxml.H004;
 
 namespace NetEbics.Handler
 {
@@ -62,10 +63,13 @@ namespace NetEbics.Handler
                         break;
                     case EbicsParams<ebics.HVUOrderParamsType> hvu:
                         cmd = new HvuCommand { Params = hvu, Config = Config, Namespaces = Namespaces };
-                        break;
+                        break;*/
                     case EbicsParams<ebics.HVZOrderParamsType> hvz:
                         cmd = new HvzCommand { Params = hvz, Config = Config, Namespaces = Namespaces };
-                        break;*/
+                        break;
+                    case EbicsParams<ebics.StandardOrderParamsType> htd:
+                        cmd = new HtdCommand { Params = htd, Config = Config, Namespaces = Namespaces };
+                        break;
                     default:
                         throw new NotImplementedException();
                 }

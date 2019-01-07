@@ -6,13 +6,13 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-using System.Xml.Linq;
+using System.IO;
 
 namespace NetEbics.Responses
 {
     public class EbicsResponseWithDocument<T> : Response
     {
         public T ebics;
-        public XDocument document;
+        public MemoryStream document;
     }
 }

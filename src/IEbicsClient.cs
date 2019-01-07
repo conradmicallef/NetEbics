@@ -28,5 +28,6 @@ namespace NetEbics
         EbicsResponseWithDocument<ebics.HVZResponseOrderDataType> HVZ(EbicsParams<ebics.HVZOrderParamsType> p);
         EbicsResponseWithDocument<ebics.HVUResponseOrderDataType> HVU(EbicsParams<ebics.HVUOrderParamsType> p);
         EbicsResponseWithDocument<ebics.HVDResponseOrderDataType> HVD(EbicsParams<ebics.HVDOrderParamsType> p);
+        EbicsResponseWithDocument<ebics.HTDReponseOrderDataType> HTD(EbicsParams<ebics.StandardOrderParamsType> p);
     }
 }

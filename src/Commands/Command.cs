@@ -63,8 +63,8 @@ namespace NetEbics.Commands
         }
         string XMLSerialize<T>(T o, params Type[] types)
         {
-//            System.Xml.Serialization.XmlSerializerNamespaces ns = new System.Xml.Serialization.XmlSerializerNamespaces();
-//            ns.Add("ds", "http://www.w3.org/2000/09/xmldsig#");
+            //            System.Xml.Serialization.XmlSerializerNamespaces ns = new System.Xml.Serialization.XmlSerializerNamespaces();
+            //            ns.Add("ds", "http://www.w3.org/2000/09/xmldsig#");
             System.Xml.Serialization.XmlSerializer x =
                 (types != null && types.Any())
                 ? new System.Xml.Serialization.XmlSerializer(typeof(T), types)
@@ -84,18 +84,25 @@ namespace NetEbics.Commands
         {
             var x = new XmlDocument() { PreserveWhitespace = true };
             x.LoadXml(s);
-            /*            var nm = new XmlNamespaceManager(x.NameTable);
-                        nm.AddNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-                        foreach (XmlNode node in x.SelectNodes("//*[@xsi:type]",nm))
-                        {
-                            node.Attributes.RemoveNamedItem("xsi:type");
-                        }
-                        foreach (XmlNode node in x.SelectNodes("//*[@xsi:nil='true']",nm))
-                        {
-                            node.ParentNode.RemoveChild(node);
-                        }
-                        x.DocumentElement.Attributes.RemoveNamedItem("xmlns:xsd");
-                        x.DocumentElement.Attributes.RemoveNamedItem("xmlns:xsi");*/
+            var nm = new XmlNamespaceManager(x.NameTable);
+            nm.AddNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+            foreach (XmlNode node in x.SelectNodes("//*[@xsi:type]", nm))
+            {
+                if (node.Name == "OrderParams")
+                {
+                    var newnode = x.CreateNode(XmlNodeType.Element, node.Attributes["xsi:type"].Value.Replace("Type",""), node.NamespaceURI);
+                    newnode.InnerXml = node.InnerXml;
+                    node.ParentNode.ReplaceChild(newnode, node);
+                }
+                else
+                    node.Attributes.RemoveNamedItem("xsi:type");
+            }
+            //foreach (XmlNode node in x.SelectNodes("//*[@xsi:nil='true']", nm))
+            //{
+            //    node.ParentNode.RemoveChild(node);
+            //}
+            //x.DocumentElement.Attributes.RemoveNamedItem("xmlns:xsd");
+            //x.DocumentElement.Attributes.RemoveNamedItem("xmlns:xsi");
             return x;
         }
         protected XmlDocument XMLSerializeToDocument<T>(T o, params Type[] types)
@@ -131,8 +138,8 @@ namespace NetEbics.Commands
                 int.TryParse(ebr.header.mutable.ReturnCode, out var techCode);
                 int.TryParse(ebr.body.ReturnCode.Value, out var busCode);
                 int.TryParse(ebr.header.@static.NumSegments, out var numSegments);
-                int.TryParse(ebr.header.mutable.SegmentNumber.Value, out var segmentNo);
-                var lastSegment = ebr.header.mutable.SegmentNumber.lastSegment;
+                int.TryParse(ebr.header.mutable.SegmentNumber?.Value, out var segmentNo);
+                var lastSegment = ebr.header.mutable.SegmentNumber?.lastSegment;
                 Enum.TryParse<TransactionPhase>(ebr.header.mutable.TransactionPhase.ToString(), out var transPhase);
 
                 var dr = new DeserializeResponse
@@ -141,7 +148,7 @@ namespace NetEbics.Commands
                     TechnicalReturnCode = techCode,
                     NumSegments = numSegments,
                     SegmentNumber = segmentNo,
-                    LastSegment = lastSegment,
+                    LastSegment = lastSegment??true,
                     TransactionId = Convert.ToBase64String(ebr.header.@static.TransactionID),
                     Phase = transPhase,
                     ReportText = ebr.header.mutable.ReportText
@@ -498,7 +505,14 @@ namespace NetEbics.Commands
         }
         protected XmlDocument Authenticate(ebics.ebicsNoPubKeyDigestsRequest initReq)
         {
-            initReq.AuthSignature = new ebics.SignatureType {   SignatureValue=new ebics.SignatureValueType { } };
+            initReq.AuthSignature = new ebics.SignatureType { SignatureValue = new ebics.SignatureValueType { } };
+            var doc = XMLSerializeToDocument(initReq);
+            Sign(doc, Config.User.AuthKeys.PrivateKey);
+            return doc;
+        }
+        protected XmlDocument Authenticate(ebics.ebicsRequest initReq)
+        {
+            initReq.AuthSignature = new ebics.SignatureType { SignatureValue = new ebics.SignatureValueType { } };
             var doc = XMLSerializeToDocument(initReq);
             Sign(doc, Config.User.AuthKeys.PrivateKey);
             return doc;
