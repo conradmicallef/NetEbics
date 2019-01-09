@@ -60,7 +60,7 @@ namespace NetEbics.Commands
                             SignatureVersion = "A005",
                             PubKeyValue = new ebics.PubKeyValueType1
                             {
-                                TimeStamp = DateTime.UtcNow,
+                                TimeStamp = Config.User.SignKeys.TimeStamp.Value,
                                 TimeStampSpecified = true,
                                 RSAKeyValue = new ebics.RSAKeyValueType
                                 {

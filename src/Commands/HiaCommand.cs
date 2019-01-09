@@ -53,7 +53,7 @@ namespace NetEbics.Commands
                             AuthenticationVersion = "X002",
                             PubKeyValue = new ebics.PubKeyValueType
                             {
-                                TimeStamp = DateTime.UtcNow,
+                                TimeStamp = Config.User.AuthKeys.TimeStamp.Value,
                                 TimeStampSpecified = true,
                                 RSAKeyValue = new ebics.RSAKeyValueType
                                 {
@@ -67,7 +67,7 @@ namespace NetEbics.Commands
                             EncryptionVersion = "E002",
                             PubKeyValue = new ebics.PubKeyValueType
                             {
-                                TimeStamp = DateTime.UtcNow,
+                                TimeStamp = Config.User.CryptKeys.TimeStamp.Value,
                                 TimeStampSpecified = true,
                                 RSAKeyValue = new ebics.RSAKeyValueType
                                 {

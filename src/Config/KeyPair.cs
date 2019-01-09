@@ -40,6 +40,7 @@ namespace NetEbics.Config
 
                 _publicKey = _cert.GetRSAPublicKey();
                 _privateKey = _cert.GetRSAPrivateKey();
+                TimeStamp = DateTime.Parse(_cert.GetEffectiveDateString());
             }
         }
 
