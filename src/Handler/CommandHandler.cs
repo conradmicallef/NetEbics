@@ -67,8 +67,18 @@ namespace NetEbics.Handler
                     case EbicsParams<ebics.HVZOrderParamsType> hvz:
                         cmd = new HvzCommand { Params = hvz, Config = Config, Namespaces = Namespaces };
                         break;
-                    case EbicsParams<ebics.StandardOrderParamsType> htd:
+                        //                    case EbicsParams<ebics.StandardOrderParamsType> htd:
+                    case HtdParams htd:
                         cmd = new HtdCommand { Params = htd, Config = Config, Namespaces = Namespaces };
+                        break;
+                    case StaParams sta:
+                        cmd = new StaCommand { Params = sta, Config = Config, Namespaces = Namespaces };
+                        break;
+                    case HpdParams hpd:
+                        cmd = new HpdCommand { Params = hpd, Config = Config, Namespaces = Namespaces };
+                        break;
+                    case VmkParams vmk:
+                        cmd = new VmkCommand { Params = vmk, Config = Config, Namespaces = Namespaces };
                         break;
                     default:
                         throw new NotImplementedException();
@@ -82,9 +92,9 @@ namespace NetEbics.Handler
 
         internal T Send<T>(Params cmdParams) where T : Response
         {
-            var cmd = CreateCommand(cmdParams);
+            dynamic cmd = CreateCommand(cmdParams);
             ProtocolHandler.Send(cmd);
-            return ((GenericCommand<T>) cmd).Response;
+            return cmd.Response;
         }
     }
 }

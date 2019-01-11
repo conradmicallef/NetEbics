@@ -7,9 +7,11 @@
  */
 
 using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Org.BouncyCastle.OpenSsl;
 using StatePrinting;
 using StatePrinting.Configurations;
 using StatePrinting.FieldHarvesters;
@@ -137,6 +139,33 @@ namespace NetEbics.Config
             cfg.Add(new PublicFieldsAndPropertiesHarvester());
 
             _printer = new Stateprinter(cfg);            
+        }
+
+        public void Save(string filename)
+        {
+            Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters rsa = new Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters(false,
+                new Org.BouncyCastle.Math.BigInteger(1,Modulus),
+                new Org.BouncyCastle.Math.BigInteger(1,Exponent)
+                );
+            using (TextWriter sw = new StreamWriter(filename + ".pubkey"))
+            {
+                var pw = new PemWriter(sw);
+                pw.WriteObject(rsa);
+                sw.Flush();
+            }
+        }
+        public void Load(string filename)
+        {
+            using (var sr = new StreamReader(filename + ".pubkey"))
+            {
+                var pr = new PemReader(sr);
+                Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters rsa = (Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters)pr.ReadObject();
+                RSAParameters r = new RSAParameters();
+                r.Modulus = rsa.Modulus.ToByteArrayUnsigned();
+                r.Exponent = rsa.Exponent.ToByteArrayUnsigned();
+                RSA rsakey = RSA.Create(r);
+                PublicKey = rsakey;
+            }
         }
 
         public override string ToString() => _printer.PrintObject(this);

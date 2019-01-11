@@ -6,6 +6,7 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
+using System;
 using StatePrinting;
 using StatePrinting.OutputFormatters;
 using ebics = ebicsxml.H004;
@@ -43,5 +44,22 @@ namespace NetEbics.Config
         }
 
         public override string ToString() => _printer.PrintObject(this);
+
+        public void Save(string v)
+        {
+            AuthKeys.Save(v + "/AuthKeys");
+            CryptKeys.Save(v + "/CryptKeys");
+        }
+
+        public void Load(string v)
+        {
+            if (AuthKeys == null)
+                AuthKeys = new AuthKeyPair();
+            if (CryptKeys == null)
+                CryptKeys = new CryptKeyPair();
+            AuthKeys.Load(v + "/AuthKeys");
+            CryptKeys.Load(v + "/CryptKeys");
+
+        }
     }
 }

@@ -11,7 +11,7 @@ using ebics=ebicsxml.H004;
 
 namespace NetEbics.Parameters
 {
-    public class StaParams: EbicsParams<ebics.StandardOrderParamsType>
+    public class VmkParams: EbicsParams<ebics.StandardOrderParamsType>
     {
     }
 }

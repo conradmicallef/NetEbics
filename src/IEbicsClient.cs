@@ -18,7 +18,7 @@ namespace NetEbics
         EbicsConfig Config { get; set; }
         HpbResponse HPB(HpbParams p);
         PtkResponse PTK(PtkParams p);
-        StaResponse STA(StaParams p);
+        //StaResponse STA(StaParams p);
         CctResponse CCT(CctParams p);
         IniResponse INI(IniParams p);
         HiaResponse HIA(HiaParams p);
@@ -28,6 +28,10 @@ namespace NetEbics
         EbicsResponseWithDocument<ebics.HVZResponseOrderDataType> HVZ(EbicsParams<ebics.HVZOrderParamsType> p);
         EbicsResponseWithDocument<ebics.HVUResponseOrderDataType> HVU(EbicsParams<ebics.HVUOrderParamsType> p);
         EbicsResponseWithDocument<ebics.HVDResponseOrderDataType> HVD(EbicsParams<ebics.HVDOrderParamsType> p);
-        EbicsResponseWithDocument<ebics.HTDReponseOrderDataType> HTD(EbicsParams<ebics.StandardOrderParamsType> p);
+        EbicsResponseWithDocument<ebics.HTDReponseOrderDataType> HTD(HtdParams p);
+        EbicsResponseWithDocument<int> STA(StaParams p);
+        EbicsResponseWithDocument<int> VMK(VmkParams p);
+        EbicsResponseWithDocument<ebics.HPDResponseOrderDataType> HPD(HpdParams hpdParams);
+        EbicsResponseWithDocument<ebics.HVTResponseOrderDataType> HVT(EbicsParams<ebics.HVTOrderParamsType> p);
     }
 }

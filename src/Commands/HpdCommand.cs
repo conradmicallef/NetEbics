@@ -10,9 +10,9 @@ using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
-    internal class StaCommand : GenericEbicsDCommand<int,ebics.StandardOrderParamsType>
+    internal class HpdCommand : GenericEbicsDCommand<ebics.HPDResponseOrderDataType,ebics.StandardOrderParamsType>
     {
-        internal override string OrderType => "STA";
+        internal override string OrderType => "HPD";
         internal override string OrderAttribute => "DZHNN";
         internal override TransactionType TransactionType => TransactionType.Download;
     }

@@ -20,9 +20,9 @@
     <Compile Remove="src\Commands\CddCommand.cs" />
     <Compile Remove="src\Commands\HvdCommand.cs" />
     <Compile Remove="src\Commands\HvuCommand.cs" />
+    <Compile Remove="src\Commands\OldStaCommand.cs" />
     <Compile Remove="src\Commands\PtkCommand.cs" />
     <Compile Remove="src\Commands\SprCommand.cs" />
-    <Compile Remove="src\Commands\StaCommand.cs" />
     <Compile Remove="src\Xml\AuthenticationPubKeyInfo.cs" />
     <Compile Remove="src\Xml\BankPubKeyDigests.cs" />
     <Compile Remove="src\Xml\Body.cs" />
@@ -67,6 +67,9 @@
   <ItemGroup>
     <None Update="src\Xsd\H005\ebics_H005.xsd">
       <Generator>xsd</Generator>
+    </None>
+    <None Update="src\Xsd\pain.001.001.03.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
