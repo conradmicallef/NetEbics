@@ -33,20 +33,42 @@ namespace NetEbics.Swift
             if (prevLine != null)
                 yield return prevLine;
         }
-        public class F60
+        public class F34:FixedStr
         {
-            static Regex r60c = new Regex("^([CD])([0-9]{6})([A-Z]{3})(.*)$", RegexOptions.Compiled);
-            public string sign { get; set; }
-            public string date { get; set; }
             public string currency { get; set; }
-            public string balance { get; set; }
-            public F60(string operand)
+            public string sign { get; set; }
+            public string limit { get; set; }
+            public F34(string operand):base(operand)
             {
-                var f60 = r60c.Match(operand);
-                sign = f60.Groups[1].Value;
-                date = f60.Groups[2].Value;
-                currency = f60.Groups[3].Value;
-                balance = f60.Groups[4].Value;
+                currency = TakeM(3);
+                sign = TakeM(1);
+                limit = this.operand;
+            }
+        }
+        public class F13 : FixedStr
+        {
+            public string date { get; set; }
+            public string time { get; set; }
+            public string sign { get; set; }
+            public string offset { get; set; }
+            public F13(string operand) : base(operand)
+            {
+                date = TakeM(6);
+                time = TakeM(4);
+                sign = TakeM(1);
+                offset=this.operand;
+            }
+        }
+        public class F90 : FixedStr
+        {
+            public string number;
+            public string currency;
+            public string amount;
+            public F90(string operand):base(operand)
+            {
+                number = TakeM(5);
+                currency = TakeM(3);
+                amount = this.operand;
             }
         }
         public class FixedStr
@@ -169,12 +191,13 @@ namespace NetEbics.Swift
         public class Record
         {
             public string TRN { get; set; }
-            public string RELATEDREF { get; set; }
             public string Account { get; set; }
             public string f28_StatementNumber { get; set; }
             public string f28_SequenceNumber { get; set; }
-            public F60 f60 { get; set; }
-            public string L62 { get; set; }
+            public F13 f13 { get; set; }
+            public F90 f90C { get; set; }
+            public F90 f90D { get; set; }
+            public List<F34> L34 { get; set; } = new List<F34>();
             public List<F61> L61 { get; set; } = new List<F61>();
             public List<F86> L86 { get; set; } = new List<F86>();
 
@@ -200,8 +223,8 @@ namespace NetEbics.Swift
                 {
                     case "20":
                         TRN = operand; break;
-                    case "21":
-                        RELATEDREF = operand; break;
+                    //case "21":
+                    //    RELATEDREF = operand; break;
                     case "25":
                         Account = operand; break;
                     case "28C":
@@ -209,20 +232,38 @@ namespace NetEbics.Swift
                         f28_StatementNumber = f28.Groups[1].Value;
                         f28_SequenceNumber = f28.Groups[2].Value;
                         break;
-                    case "60F":
-                    case "60M":
-                        f60 = new F60(operand);
-                        break;
+                    //case "60F":
+                    //case "60M":
+                    //    f60 = new F60(operand);
+                    //    break;
                     case "61":
                         L61.Add(new F61(operand));
                         break;
                     case "86":
                         L86.Add(new F86(operand));
                         break;
-                    case "62F":
-                    case "62M":
-                        L62 = fno + ":" + operand;
+                    case "34F":
+                        L34.Add(new F34(operand));
                         break;
+                    case "13D":
+                        f13 = new F13(operand);
+                        break;
+                    case "90D":
+                        f90D=new F90(operand);
+                        break;
+                    case "90C":
+                        f90C =new F90(operand);
+                        break;
+
+                    //case "62F":
+                    //case "62M":
+                    //    L62 = fno + ":" + operand;
+                    //    break;
+                    //case "34F":
+                    //case "13D":
+                    //case "90D":
+                    //case "90C":
+                    //    break;
                     default:
                         throw new NotImplementedException();
                 }
