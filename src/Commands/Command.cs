@@ -32,7 +32,6 @@ namespace NetEbics.Commands
         private static readonly ILogger s_logger = EbicsLogging.CreateLogger<Command>();
 
         internal EbicsConfig Config { get; set; }
-        internal NamespaceConfig Namespaces { get; set; }
 
         internal abstract string OrderType { get; }
         internal abstract string OrderAttribute { get; }
@@ -90,7 +89,7 @@ namespace NetEbics.Commands
             {
                 if (node.Name == "OrderParams")
                 {
-                    var newnode = x.CreateNode(XmlNodeType.Element, node.Attributes["xsi:type"].Value.Replace("Type",""), node.NamespaceURI);
+                    var newnode = x.CreateNode(XmlNodeType.Element, node.Attributes["xsi:type"].Value.Replace("Type", ""), node.NamespaceURI);
                     newnode.InnerXml = node.InnerXml;
                     node.ParentNode.ReplaceChild(newnode, node);
                 }
@@ -133,6 +132,11 @@ namespace NetEbics.Commands
         {
             using (new MethodLogger(s_logger))
             {
+                //do signature validation here
+                var doc = new XmlDocument { PreserveWhitespace = true };
+                doc.LoadXml(payload);
+                VerifySignature(doc, Config.Bank.AuthKeys.PublicKey);
+
                 //var doc = XDocument.Parse(payload);
                 ebr = XMLDeserialize<ebics.ebicsResponse>(payload);
                 int.TryParse(ebr.header.mutable.ReturnCode, out var techCode);
@@ -360,7 +364,7 @@ namespace NetEbics.Commands
             }
         }
 
-        byte[] CanonicalizeAndDigest(XmlNodeList nodeList)
+        byte[] CanonicalizeAndDigest(XmlNodeList nodeList,bool dotraverser=true)
         {
             var encoding = System.Text.Encoding.UTF8;
             var transform = new XmlDsigC14NTransform();
@@ -370,7 +374,7 @@ namespace NetEbics.Commands
                 var newdoc = new XmlDocument { PreserveWhitespace = true };
                 var newnode = newdoc.AppendChild(newdoc.ImportNode(n, true));
                 var traverser = n.ParentNode;
-                while (traverser != null)
+                while (dotraverser && traverser != null)
                 {
                     if (traverser.Attributes != null)
                         foreach (var a in traverser.Attributes.OfType<XmlAttribute>())
@@ -494,12 +498,7 @@ namespace NetEbics.Commands
                 throw new Exception("invalid transform");
             if (reference.DigestValue.SequenceEqual(digest) == false)
                 throw new Exception("invalid digest");
-            var sigdoc = XMLSerializeToDocument(signature);
-            //var sb = new StringBuilder();
-            //xmlserializer = new System.Xml.Serialization.XmlSerializer(typeof(ebics.SignedInfoType));
-            //using (var sw = new Utf8StringWriter(sb))
-            //    xmlserializer.Serialize(sw, signature.SignedInfo);
-            var _digest = CanonicalizeAndDigest(sigdoc.SelectNodes("//*[local-name()='SignedInfo']"));
+            var _digest = CanonicalizeAndDigest(signatureXml.SelectNodes("//*[local-name()='SignedInfo']"),true);
             if (signKey.VerifyHash(_digest, signature.SignatureValue.Value, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1) == false)
                 throw new Exception("invalid signature");
         }
@@ -638,7 +637,7 @@ namespace NetEbics.Commands
         //        return doc;
         //    }
         //}
-        private string FormatXml(XDocument doc)
+        protected string FormatXml(XDocument doc)
         {
             var xmlStr = doc.ToString(SaveOptions.DisableFormatting);
             xmlStr = xmlStr.Replace("\n", "");

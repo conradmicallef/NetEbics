@@ -14,13 +14,13 @@ namespace NetEbics
 {
     internal static class CryptoUtils
     {
-        internal static string GetNonce()
-        {
-            var provider = new RNGCryptoServiceProvider();
-            var bnonce = new byte[16];
-            provider.GetBytes(bnonce);
-            return BitConverter.ToString(bnonce).Replace("-", "");
-        }
+        //internal static string GetNonce()
+        //{
+        //    var provider = new RNGCryptoServiceProvider();
+        //    var bnonce = new byte[16];
+        //    provider.GetBytes(bnonce);
+        //    return BitConverter.ToString(bnonce).Replace("-", "");
+        //}
         internal static byte[] GetNonceBinary()
         {
             var provider = new RNGCryptoServiceProvider();
@@ -37,15 +37,15 @@ namespace NetEbics
             return key;
         }
 
-        internal static string GetUtcTimeNow()
-        {
-            return DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
-        }
+        //internal static string GetUtcTimeNow()
+        //{
+        //    return DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+        //}
 
-        internal static string FormatUtcTime(DateTime? dt)
-        {
-            return dt.HasValue ? dt.Value.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ") : null;
-        }
+        //internal static string FormatUtcTime(DateTime? dt)
+        //{
+        //    return dt.HasValue ? dt.Value.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ") : null;
+        //}
 
         internal static string Print(byte[] arr)
         {

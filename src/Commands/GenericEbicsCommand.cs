@@ -103,14 +103,14 @@ namespace NetEbics.Commands
             }
         }
 
-        private string FormatXml(XDocument doc)
-        {
-            var xmlStr = doc.ToString(SaveOptions.DisableFormatting);
-            xmlStr = xmlStr.Replace("\n", "");
-            xmlStr = xmlStr.Replace("\r", "");
-            xmlStr = xmlStr.Replace("\t", "");
-            return xmlStr;
-        }
+        //private string FormatXml(XDocument doc)
+        //{
+        //    var xmlStr = doc.ToString(SaveOptions.DisableFormatting);
+        //    xmlStr = xmlStr.Replace("\n", "");
+        //    xmlStr = xmlStr.Replace("\r", "");
+        //    xmlStr = xmlStr.Replace("\t", "");
+        //    return xmlStr;
+        //}
 
         private XElement CreateUserSigData(XDocument doc)
         {
@@ -167,7 +167,7 @@ namespace NetEbics.Commands
             {
                 try
                 {
-                    XNamespace nsEBICS = Namespaces.Ebics;
+                    //XNamespace nsEBICS = Namespaces.Ebics;
 
                     var segments = new List<string> { };
 

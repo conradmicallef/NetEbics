@@ -25,13 +25,13 @@ namespace NetEbics
         SprResponse SPR(SprParams p);
         CddResponse CDD(CddParams p);
 
-        EbicsResponseWithDocument<ebics.HVZResponseOrderDataType> HVZ(EbicsParams<ebics.HVZOrderParamsType> p);
-        EbicsResponseWithDocument<ebics.HVUResponseOrderDataType> HVU(EbicsParams<ebics.HVUOrderParamsType> p);
-        EbicsResponseWithDocument<ebics.HVDResponseOrderDataType> HVD(EbicsParams<ebics.HVDOrderParamsType> p);
-        EbicsResponseWithDocument<ebics.HTDReponseOrderDataType> HTD(HtdParams p);
-        EbicsResponseWithDocument<int> STA(StaParams p);
-        EbicsResponseWithDocument<int> VMK(VmkParams p);
-        EbicsResponseWithDocument<ebics.HPDResponseOrderDataType> HPD(HpdParams hpdParams);
-        EbicsResponseWithDocument<ebics.HVTResponseOrderDataType> HVT(EbicsParams<ebics.HVTOrderParamsType> p);
+        HvzResponse HVZ(HvzParams p);
+        HvuResponse HVU(HvuParams p);
+        HvdResponse HVD(HvdParams p);
+        HtdResponse HTD(HtdParams p);
+        StaResponse STA(StaParams p);
+        VmkResponse VMK(VmkParams p);
+        HpdResponse HPD(HpdParams p);
+        HvtResponse HVT(HvtParams p);
     }
 }

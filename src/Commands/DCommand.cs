@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
@@ -21,21 +22,27 @@ using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
-    internal abstract class GenericEbicsDCommand<ResponseType, RequestType> : GenericCommand<EbicsResponseWithDocument<ResponseType>>,IDisposable
+    internal abstract class DCommand: Command
     {
-        private static readonly ILogger s_logger = EbicsLogging.CreateLogger<GenericCommand<EbicsResponseWithDocument<ResponseType>>>();
+        private static readonly ILogger s_logger = EbicsLogging.CreateLogger<DCommand>();
         private byte[] _transactionID;
+        private int _numSegments;
+        private int _initSegment;
+        private bool _initLastSegment;
+        private string[] _orderData;
 
-        internal EbicsParams<RequestType> Params { private get; set; }
+        protected abstract object _Params {  get; }
+        protected abstract string SecurityMedium { get; }
+
+        internal override string OrderAttribute => "DZHNN";
         internal override TransactionType TransactionType => TransactionType.Download;
-        internal override IList<XmlDocument> Requests => null;
+        internal override IList<XmlDocument> Requests => CreateRequests();
         internal override XmlDocument InitRequest => CreateInitRequest();
         internal override XmlDocument ReceiptRequest => CreateReceiptRequest();
 
+        protected string ResponseData;
 
-        public readonly MemoryStream ms = new MemoryStream();
-
-        public GenericEbicsDCommand()
+        public DCommand()
         {
         }
         protected byte[] DecryptOrderData(ebics.DataTransferResponseType dt)
@@ -81,25 +88,24 @@ namespace NetEbics.Commands
                         return dr;
                     }
 
-                    //do signature validation here
-                    var doc = new XmlDocument { PreserveWhitespace = true };
-                    doc.LoadXml(payload);
-                    //VerifySignature(doc, Config.Bank.AuthKeys.PublicKey);
-
-                    if (dr.Phase == TransactionPhase.Initialisation)
+                    switch (dr.Phase)
                     {
-                        _transactionID = ebr.header.@static.TransactionID;
-                    }
-                    if (dr.Phase == TransactionPhase.Receipt)
-                        return dr;
-                    var decryptedOd = DecryptOrderData(ebr.body.DataTransfer);
-                    var deflatedOd = Decompress(decryptedOd);
-                    ms.Write(deflatedOd);
+                        case TransactionPhase.Initialisation:
+                            _transactionID = ebr.header.@static.TransactionID;
+                            _numSegments = dr.NumSegments;
+                            _initSegment = dr.SegmentNumber;
+                            _initLastSegment = dr.LastSegment;
+                            _orderData = new string[_numSegments];
+                            _orderData[dr.SegmentNumber - 1] =
+                                Encoding.UTF8.GetString(Decompress(DecryptOrderData(ebr.body.DataTransfer)));
+                            ResponseData = string.Join("", _orderData);
+                            break;
+                        case TransactionPhase.Transfer:
+                            _orderData[dr.SegmentNumber - 1] =
+                                Encoding.UTF8.GetString(Decompress(DecryptOrderData(ebr.body.DataTransfer)));
+                            ResponseData = string.Join("", _orderData);
+                            break;
 
-                    if (dr.LastSegment)
-                    {
-                        //compute actual received data
-                        Response.document = ms;
                     }
 
                     return dr;
@@ -167,6 +173,67 @@ namespace NetEbics.Commands
             }
         }
 
+        private IList<XmlDocument> CreateRequests()
+        {
+            using (new MethodLogger(s_logger))
+            {
+                try
+                {
+                    if (_initLastSegment)
+                    {
+                        s_logger.LogDebug("lastSegment is {lastSegment}. Not creating any transfer requests",
+                            _initLastSegment);
+                        return null;
+                    }
+
+                    var reqs = new List<XmlDocument>();
+
+                    for (var i = 1; i < _numSegments; i++)
+                    {
+                        s_logger.LogDebug("Creating transfer request {no}", i);
+                        var req = new ebics.ebicsRequest
+                        {
+                            Version = "H004",
+                            Revision = "1",
+                            header = new ebics.ebicsRequestHeader
+                            {
+                                @static = new ebics.StaticHeaderType
+                                {
+                                    HostID = Config.User.HostId,
+                                    ItemsElementName = new ebics.ItemsChoiceType3[] { ebics.ItemsChoiceType3.TransactionID },
+                                    Items = new object[] { _transactionID }
+                                },
+                                mutable = new ebics.MutableHeaderType
+                                {
+                                    TransactionPhase = ebics.TransactionPhaseType.Transfer,
+                                    SegmentNumber=new ebics.MutableHeaderTypeSegmentNumber
+                                    {
+                                        Value = (i + _initSegment).ToString(),
+                                        lastSegment = i + _initSegment == _numSegments
+                                    }
+                                },
+                            },
+                            body = new ebics.ebicsRequestBody
+                            {
+                            }
+                        };
+
+                        reqs.Add(Authenticate(req));
+                    }
+
+                    return reqs;
+                }
+                catch (EbicsException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    throw new CreateRequestException($"can't create {OrderType} requests", ex);
+                }
+            }
+        }
+
 
         private XmlDocument CreateInitRequest()
         {
@@ -213,10 +280,10 @@ namespace NetEbics.Commands
                                     {
                                         OrderType=new ebics.StaticHeaderOrderDetailsTypeOrderType{Value=OrderType},
                                         OrderAttribute=(ebics.OrderAttributeType)Enum.Parse(typeof(ebics.OrderAttributeType),this.OrderAttribute),
-                                        OrderParams=Params.ebics,
+                                        OrderParams=_Params,
                                     },
                                     Config.Bank.pubkeydigests,
-                                    Params.SecurityMedium,
+                                    SecurityMedium,
                                 }
                             },
                             mutable = new ebics.MutableHeaderType { TransactionPhase = ebics.TransactionPhaseType.Initialisation },
@@ -226,7 +293,7 @@ namespace NetEbics.Commands
                     };
 
 
-                    return Authenticate(initReq, Params.ebics?.GetType());
+                    return Authenticate(initReq, _Params?.GetType());
                 }
                 catch (EbicsException)
                 {
@@ -237,11 +304,6 @@ namespace NetEbics.Commands
                     throw new CreateRequestException($"can't create {OrderType} init request", ex);
                 }
             }
-        }
-
-        public void Dispose()
-        {
-            ms.Dispose();
         }
     }
 }

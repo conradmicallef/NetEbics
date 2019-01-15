@@ -11,7 +11,7 @@ using StatePrinting.OutputFormatters;
 
 namespace NetEbics.Responses
 {
-    public class Response
+    public abstract class Response
     {
         static readonly Stateprinter _printer;
 
@@ -28,5 +28,19 @@ namespace NetEbics.Responses
         }
 
         public override string ToString() => _printer.PrintObject(this);
+    }
+
+    interface IResponse
+    {
+        int TechnicalReturnCode { get; }
+        int BusinessReturnCode { get; }
+        string ReportText { get; }
+
+        string ResponseData { get; }
+    }
+
+    interface IResonse<T> : IResponse
+    {
+        T Response { get; }
     }
 }

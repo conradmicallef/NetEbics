@@ -6,10 +6,12 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-namespace NetEbics.Parameters
+using ebics = ebicsxml.H004;
+
+namespace NetEbics.Responses
 {
-    public abstract class EbicsParams<T> : Params
+    public class HvtResponse: Response
     {
-        public T ebics;
+        public ebics.HVTResponseOrderDataType Data { get; internal set; }
     }
 }

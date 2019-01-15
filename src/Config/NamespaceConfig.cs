@@ -11,31 +11,31 @@ using StatePrinting.OutputFormatters;
 
 namespace NetEbics.Config
 {
-    internal class NamespaceConfig
-    {
-        private static readonly Stateprinter _printer;
+    //internal class NamespaceConfig
+    //{
+    //    private static readonly Stateprinter _printer;
         
-        internal string Ebics { get; set; }
+    //    internal string Ebics { get; set; }
 
-        internal string EbicsPrefix => "urn";
+    //    internal string EbicsPrefix => "urn";
 
-        internal string XmlDsig { get; set; }
+    //    internal string XmlDsig { get; set; }
 
-        internal string XmlDsigPrefix => "ds";
+    //    internal string XmlDsigPrefix => "ds";
 
-        internal string Cct { get; set; }
-        internal string Cdd { get; set; }
+    //    internal string Cct { get; set; }
+    //    internal string Cdd { get; set; }
 
-        internal string SignatureData { get; set; }
+    //    internal string SignatureData { get; set; }
         
-        static NamespaceConfig()
-        {
-            _printer = new Stateprinter();
-            _printer.Configuration.SetNewlineDefinition("");
-            _printer.Configuration.SetIndentIncrement(" ");
-            _printer.Configuration.SetOutputFormatter(new JsonStyle(_printer.Configuration));
-        }
+    //    static NamespaceConfig()
+    //    {
+    //        _printer = new Stateprinter();
+    //        _printer.Configuration.SetNewlineDefinition("");
+    //        _printer.Configuration.SetIndentIncrement(" ");
+    //        _printer.Configuration.SetOutputFormatter(new JsonStyle(_printer.Configuration));
+    //    }
 
-        public override string ToString() => _printer.PrintObject(this);
-    }
+    //    public override string ToString() => _printer.PrintObject(this);
+    //}
 }

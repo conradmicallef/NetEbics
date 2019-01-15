@@ -6,14 +6,29 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
+using NetEbics.Parameters;
+using NetEbics.Responses;
 using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
-    internal class VmkCommand : GenericEbicsDCommand<int,ebics.StandardOrderParamsType>
+    internal class VmkCommand : DCommand
     {
+        internal VmkParams Params;
+        protected override object _Params => Params.ebics;
+
+        protected override string SecurityMedium => Params.SecurityMedium;
+
         internal override string OrderType => "VMK";
-        internal override string OrderAttribute => "DZHNN";
-        internal override TransactionType TransactionType => TransactionType.Download;
+
+        internal VmkResponse Response = new VmkResponse();
+
+        internal override DeserializeResponse Deserialize(string payload)
+        {
+            var dr = base.Deserialize(payload);
+            UpdateResponse(Response, dr);
+            Response.Data = ResponseData;
+            return dr;
+        }
     }
 }

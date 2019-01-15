@@ -18,17 +18,20 @@ using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
-    internal class HiaCommand : GenericCommand<HiaResponse>
+    internal class HiaCommand : Command
     {
         private static readonly ILogger s_logger = EbicsLogging.CreateLogger<HiaCommand>();
         
-        internal HiaParams Params { private get; set; }
         internal override string OrderType => "HIA";
         internal override string OrderAttribute => "DZNNN";
         internal override TransactionType TransactionType => TransactionType.Upload;
         internal override IList<XmlDocument> Requests => CreateRequests();
         internal override XmlDocument InitRequest => null;
         internal override XmlDocument ReceiptRequest => null;
+
+        internal HiaParams Params;
+        public HiaResponse Response=new HiaResponse();
+
 
         internal override DeserializeResponse Deserialize(string payload)
         {

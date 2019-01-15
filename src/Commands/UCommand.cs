@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Xml;
@@ -21,42 +22,19 @@ using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
-    internal abstract class GenericEbicsUCommand<ResponseType,RequestType> : Command 
+    internal abstract class UCommand : Command
     {
-        private static readonly ILogger s_logger = EbicsLogging.CreateLogger<GenericCommand<EbicsResponse<ResponseType>>>();
-
-        protected EbicsResponse<ResponseType> _response;
-
-        internal EbicsResponse<ResponseType> Response
-        {
-            get
-            {
-                if (_response == null)
-                {
-                    _response = Activator.CreateInstance<EbicsResponse<ResponseType>>();
-                }
-
-                return _response;
-            }
-            set => _response = value;
-        }
-
-        //internal override DeserializeResponse Deserialize(string payload)
-        //{
-        //    using (new MethodLogger(s_logger))
-        //    {
-        //        var dr = base.Deserialize(payload);
-        //        UpdateResponse(this.Response, dr);
-        //        return dr;
-        //    }
-        //}
-
+        private static readonly ILogger s_logger = EbicsLogging.CreateLogger<UCommand>();
         private readonly byte[] _transactionKey;
         private XmlDocument _initReq;
         private IList<string> _segments;
         private string _transactionId;
 
-        internal EbicsParamsWithDocument<RequestType> Params { private get; set; }
+        protected abstract XDocument Params { get; }
+        protected abstract string SecurityMedium { get; }
+
+        internal override string OrderAttribute => "OZHNN";
+        internal override TransactionType TransactionType => TransactionType.Upload;
         internal override IList<XmlDocument> Requests => CreateUploadRequests(_segments);
 
         internal override XmlDocument InitRequest
@@ -70,7 +48,7 @@ namespace NetEbics.Commands
 
         internal override XmlDocument ReceiptRequest => null;
 
-        public GenericEbicsUCommand()
+        public UCommand()
         {
             _transactionKey = CryptoUtils.GetTransactionKey();
             s_logger.LogDebug("Transaction Key: {key}", CryptoUtils.Print(_transactionKey));
@@ -82,7 +60,7 @@ namespace NetEbics.Commands
             {
                 using (new MethodLogger(s_logger))
                 {
-                    var dr = base.Deserialize_ebicsResponse(payload,out var ebr);
+                    var dr = base.Deserialize_ebicsResponse(payload, out var ebr);
 
                     if (dr.HasError || dr.IsRecoverySync)
                     {
@@ -107,14 +85,6 @@ namespace NetEbics.Commands
             }
         }
 
-        //private string FormatXml(XDocument doc)
-        //{
-        //    var xmlStr = doc.ToString(SaveOptions.DisableFormatting);
-        //    xmlStr = xmlStr.Replace("\n", "");
-        //    xmlStr = xmlStr.Replace("\r", "");
-        //    xmlStr = xmlStr.Replace("\t", "");
-        //    return xmlStr;
-        //}
 
         private XElement CreateUserSigData(XDocument doc)
         {
@@ -133,7 +103,7 @@ namespace NetEbics.Commands
                         Revision = "1",
                         header = new ebics.ebicsRequestHeader
                         {
-                            authenticate=true,
+                            authenticate = true,
                             @static = new ebics.StaticHeaderType
                             {
                                 HostID = Config.User.HostId,
@@ -152,7 +122,7 @@ namespace NetEbics.Commands
                                 Value=Convert.FromBase64String(segment) } } } }
                         },
                     }
-                    ).Select(req => Authenticate(req,req.GetType())).ToList();
+                    ).Select(req => Authenticate(req, req.GetType())).ToList();
                 }
                 catch (EbicsException)
                 {
@@ -173,7 +143,7 @@ namespace NetEbics.Commands
                 {
                     //XNamespace nsEBICS = Namespaces.Ebics;
 
-                    var hvdDoc = Params.document;
+                    var hvdDoc = Params;
                     s_logger.LogDebug("Created {OrderType} document:\n{doc}", OrderType, hvdDoc.ToString());
 
                     var userSigData = CreateUserSigData(hvdDoc);
@@ -196,13 +166,13 @@ namespace NetEbics.Commands
                     {
                         Version = "H004",
                         Revision = "1",
-                        header=new ebics.ebicsRequestHeader
+                        header = new ebics.ebicsRequestHeader
                         {
-                            authenticate=true,
-                            @static=new ebics.StaticHeaderType
+                            authenticate = true,
+                            @static = new ebics.StaticHeaderType
                             {
-                                HostID=Config.User.HostId,
-                                ItemsElementName=new ebics.ItemsChoiceType3[]
+                                HostID = Config.User.HostId,
+                                ItemsElementName = new ebics.ItemsChoiceType3[]
                                 {
                                     ebics.ItemsChoiceType3.Nonce,
                                     ebics.ItemsChoiceType3.Timestamp,
@@ -213,24 +183,24 @@ namespace NetEbics.Commands
                                     ebics.ItemsChoiceType3.OrderDetails,
                                     ebics.ItemsChoiceType3.BankPubKeyDigests
                                 },
-                                Items=new object[]
+                                Items = new object[]
                                 {
                                     CryptoUtils.GetNonceBinary(),
                                     DateTime.UtcNow,
                                     Config.User.PartnerId,
                                     Config.User.UserId,
-                                    Params.SecurityMedium,
+                                    SecurityMedium,
                                     segments.Count.ToString(),
                                     new ebics.StaticHeaderOrderDetailsType
                                     {
                                         OrderType=new ebics.StaticHeaderOrderDetailsTypeOrderType{Value=OrderType},
                                         OrderAttribute=(ebics.OrderAttributeType)Enum.Parse(typeof(ebics.OrderAttributeType),this.OrderAttribute),
-                                        OrderParams=Params.ebics,
+                                        OrderParams=Params,
                                     },
                                     Config.Bank.pubkeydigests
                                 }
                             },
-                            mutable=new ebics.MutableHeaderType { TransactionPhase=ebics.TransactionPhaseType.Initialisation}
+                            mutable = new ebics.MutableHeaderType { TransactionPhase = ebics.TransactionPhaseType.Initialisation }
                         },
                         body = new ebics.ebicsRequestBody
                         {
@@ -258,7 +228,7 @@ namespace NetEbics.Commands
                         }
                     };
 
-                    return (request: Authenticate(initReq, Params.ebics.GetType()), segments: segments);
+                    return (request: Authenticate(initReq, Params.GetType()), segments: segments);
                 }
                 catch (EbicsException)
                 {

@@ -6,14 +6,18 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
+using NetEbics.Parameters;
 using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
-    internal class HpdCommand : GenericEbicsDCommand<ebics.HPDResponseOrderDataType,ebics.StandardOrderParamsType>
+    internal class HpdCommand : DCommand
     {
+        internal HpdParams Params;
+        protected override object _Params => Params;
+
+        protected override string SecurityMedium => Params.SecurityMedium;
+
         internal override string OrderType => "HPD";
-        internal override string OrderAttribute => "DZHNN";
-        internal override TransactionType TransactionType => TransactionType.Download;
     }
 }

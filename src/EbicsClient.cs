@@ -46,18 +46,11 @@ namespace NetEbics
             set
             {
                 _config = value ?? throw new ArgumentNullException(nameof(Config));
-                _httpClient = new HttpClient {BaseAddress = new Uri(_config.Address)};
+                var handler = new HttpClientHandler { SslProtocols = System.Security.Authentication.SslProtocols.Tls12 };
+                _httpClient = new HttpClient(handler) {BaseAddress = new Uri(_config.Address)};
                 _commandHandler.Config = value;
                 _protocolHandler.Client = _httpClient;
                 _commandHandler.ProtocolHandler = _protocolHandler;
-                var nsCfg = new NamespaceConfig();
-
-                nsCfg.XmlDsig = "http://www.w3.org/2000/09/xmldsig#";
-                nsCfg.Cct = "urn:iso:std:iso:20022:tech:xsd:pain.001.001.03";
-                nsCfg.Cdd = "urn:iso:std:iso:20022:tech:xsd:pain.008.001.02";
-                nsCfg.SignatureData = "http://www.ebics.org/S001";
-
-                _commandHandler.Namespaces = nsCfg;
             }
         }
 
@@ -144,67 +137,67 @@ namespace NetEbics
             }
         }
 
-        public EbicsResponseWithDocument<ebics.HVZResponseOrderDataType> HVZ(EbicsParams<ebics.HVZOrderParamsType> p)
+        public HvzResponse HVZ(HvzParams p)
         {
             using (new MethodLogger(Logger))
             {
-                var resp = _commandHandler.Send<EbicsResponseWithDocument<ebics.HVZResponseOrderDataType>>(p);
+                var resp = _commandHandler.Send<HvzResponse>(p);
                 return resp;
             }
         }
-        public EbicsResponseWithDocument<ebics.HVUResponseOrderDataType> HVU(EbicsParams<ebics.HVUOrderParamsType> p)
+        public HvuResponse HVU(HvuParams p)
         {
             using (new MethodLogger(Logger))
             {
-                var resp = _commandHandler.Send<EbicsResponseWithDocument<ebics.HVUResponseOrderDataType>>(p);
+                var resp = _commandHandler.Send<HvuResponse>(p);
                 return resp;
             }
         }
-        public EbicsResponseWithDocument<ebics.HVDResponseOrderDataType> HVD(EbicsParams<ebics.HVDOrderParamsType> p)
+        public HvdResponse HVD(HvdParams p)
         {
             using (new MethodLogger(Logger))
             {
-                var resp = _commandHandler.Send<EbicsResponseWithDocument<ebics.HVDResponseOrderDataType>>(p);
+                var resp = _commandHandler.Send<HvdResponse>(p);
                 return resp;
             }
         }
-        public EbicsResponseWithDocument<ebics.HVTResponseOrderDataType> HVT(EbicsParams<ebics.HVTOrderParamsType> p)
+        public HvtResponse HVT(HvtParams p)
         {
             using (new MethodLogger(Logger))
             {
-                var resp = _commandHandler.Send<EbicsResponseWithDocument<ebics.HVTResponseOrderDataType>>(p);
+                var resp = _commandHandler.Send<HvtResponse>(p);
                 return resp;
             }
         }
-        public EbicsResponseWithDocument<ebics.HTDReponseOrderDataType> HTD(HtdParams p)
+        public HtdResponse HTD(HtdParams p)
         {
             using (new MethodLogger(Logger))
             {
-                var resp = _commandHandler.Send<EbicsResponseWithDocument<ebics.HTDReponseOrderDataType>>(p);
+                var resp = _commandHandler.Send<HtdResponse>(p);
                 return resp;
             }
         }
-        public EbicsResponseWithDocument<ebics.HPDResponseOrderDataType> HPD(HpdParams p)
+        public HpdResponse HPD(HpdParams p)
         {
             using (new MethodLogger(Logger))
             {
-                var resp = _commandHandler.Send<EbicsResponseWithDocument<ebics.HPDResponseOrderDataType>>(p);
+                var resp = _commandHandler.Send<HpdResponse>(p);
                 return resp;
             }
         }
-        public EbicsResponseWithDocument<int> STA(StaParams p)
+        public StaResponse STA(StaParams p)
         {
             using (new MethodLogger(Logger))
             {
-                var resp = _commandHandler.Send<EbicsResponseWithDocument<int>>(p);
+                var resp = _commandHandler.Send<StaResponse>(p);
                 return resp;
             }
         }
-        public EbicsResponseWithDocument<int> VMK(VmkParams p)
+        public VmkResponse VMK(VmkParams p)
         {
             using (new MethodLogger(Logger))
             {
-                var resp = _commandHandler.Send<EbicsResponseWithDocument<int>>(p);
+                var resp = _commandHandler.Send<VmkResponse>(p);
                 return resp;
             }
         }

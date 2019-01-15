@@ -20,7 +20,7 @@ using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
-    internal class HpbCommand : GenericCommand<HpbResponse>
+    internal class HpbCommand : Command
     {
         private static readonly ILogger s_logger = EbicsLogging.CreateLogger<HpbCommand>();
         private IList<XmlDocument> _requests;
@@ -32,6 +32,7 @@ namespace NetEbics.Commands
         internal override XmlDocument ReceiptRequest => null;
         internal override string OrderType => "HPB";
         internal override string OrderAttribute => "DZHNN";
+        public HpbResponse Response=new HpbResponse();
 
         internal override DeserializeResponse Deserialize(string payload)
         {

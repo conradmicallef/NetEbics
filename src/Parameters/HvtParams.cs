@@ -5,11 +5,11 @@
  * This file is subject to the terms and conditions defined in
  * file 'LICENSE.txt', which is part of this source code package.
  */
+using ebics = ebicsxml.H004;
 
 namespace NetEbics.Parameters
 {
-    public abstract class EbicsParams<T> : Params
+    public class HvtParams : EbicsParams<ebics.HVTOrderParamsType>
     {
-        public T ebics;
     }
 }

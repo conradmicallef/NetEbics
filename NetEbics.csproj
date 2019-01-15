@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <PackageId>NetEbics</PackageId>
     <VersionPrefix>0.1.0</VersionPrefix>
     <Authors>Bjoern Kuensting</Authors>
@@ -18,11 +18,18 @@
   <ItemGroup>
     <Compile Remove="src\Commands\CctCommand.cs" />
     <Compile Remove="src\Commands\CddCommand.cs" />
+    <Compile Remove="src\Commands\GenericCommand.cs" />
+    <Compile Remove="src\Commands\GenericEbicsCommand.cs" />
+    <Compile Remove="src\Commands\GenericEbicsDCommand.cs" />
+    <Compile Remove="src\Commands\GenericEbicsUCommand.cs" />
     <Compile Remove="src\Commands\HvdCommand.cs" />
     <Compile Remove="src\Commands\HvuCommand.cs" />
+    <Compile Remove="src\Commands\OldPtkCommand.cs" />
+    <Compile Remove="src\Commands\OldSprCommand.cs" />
     <Compile Remove="src\Commands\OldStaCommand.cs" />
-    <Compile Remove="src\Commands\PtkCommand.cs" />
     <Compile Remove="src\Commands\SprCommand.cs" />
+    <Compile Remove="src\Responses\EbicsResponse.cs" />
+    <Compile Remove="src\Responses\EbicsResponseWithDocument.cs" />
     <Compile Remove="src\Xml\AuthenticationPubKeyInfo.cs" />
     <Compile Remove="src\Xml\BankPubKeyDigests.cs" />
     <Compile Remove="src\Xml\Body.cs" />

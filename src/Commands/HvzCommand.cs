@@ -6,14 +6,25 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
+using NetEbics.Parameters;
 using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
-    internal class HvzCommand : GenericEbicsDCommand<ebics.HVZResponseOrderDataType,ebics.HVZOrderParamsType>
+    internal class HvzCommand : DCommand
     {
+        internal EbicsParams<ebics.HVZOrderParamsType> Params;
+        protected override object _Params => Params.ebics;
+
+        protected override string SecurityMedium => Params.SecurityMedium;
+
         internal override string OrderType => "HVZ";
-        internal override string OrderAttribute => "DZNNN";
-        internal override TransactionType TransactionType => TransactionType.Download;
+
+        ebics.HVZResponseOrderDataType Response
+        {
+            get {
+                return XMLDeserialize< ebics.HVZResponseOrderDataType>(ResponseData);
+            }
+        }
     }
 }

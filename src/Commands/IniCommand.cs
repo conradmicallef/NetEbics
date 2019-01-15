@@ -18,17 +18,20 @@ using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
-    internal class IniCommand : GenericCommand<IniResponse>
+//    internal class IniCommand : GenericCommand<IniResponse>
+    internal class IniCommand : Command
     {
         private static readonly ILogger s_logger = EbicsLogging.CreateLogger<IniCommand>();
 
-        internal IniParams Params { private get; set; }
         internal override string OrderType => "INI";
         internal override string OrderAttribute => "DZNNN";
         internal override TransactionType TransactionType => TransactionType.Upload;
         internal override IList<XmlDocument> Requests => CreateRequests();
         internal override XmlDocument InitRequest => null;
         internal override XmlDocument ReceiptRequest => null;
+
+        internal IniParams Params;
+        public IniResponse Response=new IniResponse();
 
         internal override DeserializeResponse Deserialize(string payload)
         {
@@ -44,13 +47,6 @@ namespace NetEbics.Commands
                 try
                 {
                     var reqs = new List<XmlDocument>();
-                    //var userSigData = new SignaturePubKeyOrderData
-                    //{
-                    //    PartnerId = Config.User.PartnerId,
-                    //    UserId = Config.User.UserId,
-                    //    SignKeys = Config.User.SignKeys,
-                    //    Namespaces = Namespaces
-                    //};
                     var userSigData = new ebics.SignaturePubKeyOrderDataType
                     {
                         PartnerID = Config.User.PartnerId,
@@ -76,7 +72,6 @@ namespace NetEbics.Commands
                     var compressed =
                         Compress(
                             Encoding.UTF8.GetBytes(doc));
-                    //var b64encoded = Convert.ToBase64String(compressed);
                     var req = new ebics.ebicsUnsecuredRequest
                     {
                         header = new ebics.ebicsUnsecuredRequestHeader
@@ -117,39 +112,6 @@ namespace NetEbics.Commands
                         Revision="1"
 
                     };
-                    //var req = new EbicsUnsecuredRequest
-                    //{
-                    //    StaticHeader = new StaticHeader
-                    //    {
-                    //        HostId = Config.User.HostId,
-                    //        PartnerId = Config.User.PartnerId,
-                    //        UserId = Config.User.UserId,
-                    //        SecurityMedium = Params.SecurityMedium,
-                    //        Namespaces = Namespaces,
-                    //        OrderDetails = new OrderDetails
-                    //        {
-                    //            OrderType = OrderType,
-                    //            OrderAttribute = OrderAttribute,
-                    //            Namespaces = Namespaces
-                    //        }
-                    //    },
-                    //    MutableHeader = new MutableHeader
-                    //    {
-                    //        Namespaces = Namespaces
-                    //    },
-                    //    Body = new Body
-                    //    {
-                    //        Namespaces = Namespaces,
-                    //        DataTransfer = new DataTransfer
-                    //        {
-                    //            OrderData = b64encoded,
-                    //            Namespaces = Namespaces
-                    //        }
-                    //    },
-                    //    Version = Config.Version,
-                    //    Revision = Config.Revision,
-                    //    Namespaces = Namespaces
-                    //};
 
                     reqs.Add(XMLSerializeToDocument(req));
                     return reqs;
