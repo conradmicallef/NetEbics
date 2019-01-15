@@ -5,11 +5,13 @@
  * This file is subject to the terms and conditions defined in
  * file 'LICENSE.txt', which is part of this source code package.
  */
+
 using ebics = ebicsxml.H004;
 
-namespace NetEbics.Parameters
+namespace NetEbics.Responses
 {
-    public class HpdParams : Params
+    public class HkdResponse: Response
     {
+        public ebics.HKDResponseOrderDataType Data { get; internal set; }
     }
 }

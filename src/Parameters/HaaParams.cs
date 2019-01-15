@@ -9,7 +9,7 @@ using ebics = ebicsxml.H004;
 
 namespace NetEbics.Parameters
 {
-    public class HpdParams : Params
+    public class HaaParams : Params
     {
     }
 }

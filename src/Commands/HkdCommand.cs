@@ -12,22 +12,22 @@ using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
-    internal class HvuCommand : DCommand
+    internal class HkdCommand : DCommand
     {
-        internal HvuParams Params;
-        protected override object _Params => Params.ebics;
+        internal HkdParams Params;
+        protected override object _Params => new ebics.StandardOrderParamsType();
 
         protected override string SecurityMedium => Params.SecurityMedium;
 
-        internal override string OrderType => "HVU";
+        internal override string OrderType => "HKD";
 
-        public HvuResponse Response = new HvuResponse();
+        public HkdResponse Response = new HkdResponse();
 
         internal override DeserializeResponse Deserialize(string payload)
         {
             var ret = base.Deserialize(payload);
             UpdateResponse(Response, ret);
-            Response.Data = XMLDeserialize<ebics.HVUResponseOrderDataType>(ResponseData);
+            Response.Data = XMLDeserialize<ebics.HKDResponseOrderDataType>(ResponseData);
             return ret;
         }
 

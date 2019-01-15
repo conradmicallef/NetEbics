@@ -43,27 +43,24 @@ namespace NetEbics.Handler
                     case HpbParams hpb:
                         cmd = new HpbCommand {Params = hpb, Config = Config};
                         break;
-/*                    case PtkParams ptk:
+                    case PtkParams ptk:
                         cmd = new PtkCommand {Params = ptk, Config = Config};
                         break;
-                    case CctParams cct:
-                        cmd = new CctCommand {Params = cct, Config = Config};
-                        break;
-                    case StaParams sta:
-                        cmd = new StaCommand {Params = sta, Config = Config};
-                        break;
-                    case SprParams spr:
-                        cmd = new SprCommand {Params = spr, Config = Config};
-                        break;
-                    case CddParams cdd:
-                        cmd = new CddCommand {Params = cdd, Config = Config};
-                        break;
-                    case EbicsParams<ebics.HVDOrderParamsType> hvd:
+                    //case CctParams cct:
+                    //    cmd = new CctCommand {Params = cct, Config = Config};
+                    //    break;
+                    //case SprParams spr:
+                    //    cmd = new SprCommand {Params = spr, Config = Config};
+                    //    break;
+                    //case CddParams cdd:
+                    //    cmd = new CddCommand {Params = cdd, Config = Config};
+                    //    break;
+                    case HvdParams hvd:
                         cmd = new HvdCommand { Params = hvd, Config = Config };
                         break;
-                    case EbicsParams<ebics.HVUOrderParamsType> hvu:
+                    case HvuParams hvu:
                         cmd = new HvuCommand { Params = hvu, Config = Config };
-                        break;*/
+                        break;
                     case HvzParams hvz:
                         cmd = new HvzCommand { Params = hvz, Config = Config };
                         break;
@@ -79,6 +76,15 @@ namespace NetEbics.Handler
                         break;
                     case VmkParams vmk:
                         cmd = new VmkCommand { Params = vmk, Config = Config };
+                        break;
+                    case HaaParams haa:
+                        cmd = new HaaCommand { Params = haa, Config = Config };
+                        break;
+                    case HkdParams hkd:
+                        cmd = new HkdCommand { Params = hkd, Config = Config };
+                        break;
+                    case HevParams hev:
+                        cmd = new HevCommand { Params = hev, Config = Config };
                         break;
                     default:
                         throw new NotImplementedException();

@@ -33,5 +33,10 @@ namespace NetEbics
         VmkResponse VMK(VmkParams p);
         HpdResponse HPD(HpdParams p);
         HvtResponse HVT(HvtParams p);
+
+        HaaResponse HAA(HaaParams p);
+        HkdResponse HKD(HkdParams p);
+        HevResponse HEV(HevParams p);
+
     }
 }

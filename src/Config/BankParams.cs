@@ -16,7 +16,7 @@ namespace NetEbics.Config
     public class BankParams
     {
         private static readonly Stateprinter _printer;
-        protected static string s_signatureAlg => "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+        //protected static string s_signatureAlg => "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
         protected static string s_digestAlg => "http://www.w3.org/2001/04/xmlenc#sha256";
         internal ebics.StaticHeaderTypeBankPubKeyDigests pubkeydigests
         {

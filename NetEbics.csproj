@@ -22,8 +22,6 @@
     <Compile Remove="src\Commands\GenericEbicsCommand.cs" />
     <Compile Remove="src\Commands\GenericEbicsDCommand.cs" />
     <Compile Remove="src\Commands\GenericEbicsUCommand.cs" />
-    <Compile Remove="src\Commands\HvdCommand.cs" />
-    <Compile Remove="src\Commands\HvuCommand.cs" />
     <Compile Remove="src\Commands\OldPtkCommand.cs" />
     <Compile Remove="src\Commands\OldSprCommand.cs" />
     <Compile Remove="src\Commands\OldStaCommand.cs" />
@@ -82,5 +80,10 @@
   <ItemGroup>
     <Folder Include="src\Xml\" />
     <Folder Include="src\Xsd\H004\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\newtonsoft.json\11.0.2\lib\netstandard2.0\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

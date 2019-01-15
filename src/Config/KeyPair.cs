@@ -11,6 +11,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Newtonsoft.Json;
 using Org.BouncyCastle.OpenSsl;
 using StatePrinting;
 using StatePrinting.Configurations;
@@ -28,6 +29,7 @@ namespace NetEbics.Config
         protected RSA _privateKey;
         protected X509Certificate2 _cert;
 
+        [JsonIgnore]
         public X509Certificate2 Certificate
         {
             get => _cert;
@@ -46,12 +48,14 @@ namespace NetEbics.Config
             }
         }
 
+        [JsonIgnore]
         public RSA PrivateKey
         {
             get => _privateKey;
             set => _privateKey = value;
         }
 
+        [JsonIgnore]
         public RSA PublicKey
         {
             get => _publicKey;

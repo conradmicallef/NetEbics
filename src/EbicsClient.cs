@@ -201,5 +201,29 @@ namespace NetEbics
                 return resp;
             }
         }
+        public HaaResponse HAA(HaaParams p)
+        {
+            using (new MethodLogger(Logger))
+            {
+                var resp = _commandHandler.Send<HaaResponse>(p);
+                return resp;
+            }
+        }
+        public HevResponse HEV(HevParams p)
+        {
+            using (new MethodLogger(Logger))
+            {
+                var resp = _commandHandler.Send<HevResponse>(p);
+                return resp;
+            }
+        }
+        public HkdResponse HKD(HkdParams p)
+        {
+            using (new MethodLogger(Logger))
+            {
+                var resp = _commandHandler.Send<HkdResponse>(p);
+                return resp;
+            }
+        }
     }
 }

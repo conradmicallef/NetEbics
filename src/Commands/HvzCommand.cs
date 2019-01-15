@@ -7,24 +7,29 @@
  */
 
 using NetEbics.Parameters;
+using NetEbics.Responses;
 using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
     internal class HvzCommand : DCommand
     {
-        internal EbicsParams<ebics.HVZOrderParamsType> Params;
+        internal HvzParams Params;
         protected override object _Params => Params.ebics;
 
         protected override string SecurityMedium => Params.SecurityMedium;
 
         internal override string OrderType => "HVZ";
 
-        ebics.HVZResponseOrderDataType Response
+        public HvzResponse Response = new HvzResponse();
+
+        internal override DeserializeResponse Deserialize(string payload)
         {
-            get {
-                return XMLDeserialize< ebics.HVZResponseOrderDataType>(ResponseData);
-            }
+            var ret = base.Deserialize(payload);
+            UpdateResponse(Response, ret);
+            Response.Data = XMLDeserialize<ebics.HVZResponseOrderDataType>(ResponseData);
+            return ret;
         }
+
     }
 }

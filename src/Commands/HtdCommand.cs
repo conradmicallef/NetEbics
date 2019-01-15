@@ -7,6 +7,7 @@
  */
 
 using NetEbics.Parameters;
+using NetEbics.Responses;
 using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
@@ -19,5 +20,16 @@ namespace NetEbics.Commands
         protected override string SecurityMedium => Params.SecurityMedium;
 
         internal override string OrderType => "HTD";
+
+        public HtdResponse Response = new HtdResponse();
+
+        internal override DeserializeResponse Deserialize(string payload)
+        {
+            var ret = base.Deserialize(payload);
+            UpdateResponse(Response, ret);
+            Response.Data = XMLDeserialize<ebics.HTDReponseOrderDataType>(ResponseData);
+            return ret;
+        }
+
     }
 }

@@ -7,6 +7,7 @@
  */
 
 using NetEbics.Parameters;
+using NetEbics.Responses;
 using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
@@ -14,10 +15,21 @@ namespace NetEbics.Commands
     internal class HpdCommand : DCommand
     {
         internal HpdParams Params;
-        protected override object _Params => Params;
+        protected override object _Params => new ebics.StandardOrderParamsType();
 
         protected override string SecurityMedium => Params.SecurityMedium;
 
         internal override string OrderType => "HPD";
+
+        public HpdResponse Response = new HpdResponse();
+
+        internal override DeserializeResponse Deserialize(string payload)
+        {
+            var ret = base.Deserialize(payload);
+            UpdateResponse(Response, ret);
+            Response.Data = XMLDeserialize<ebics.HPDResponseOrderDataType>(ResponseData);
+            return ret;
+        }
+
     }
 }
