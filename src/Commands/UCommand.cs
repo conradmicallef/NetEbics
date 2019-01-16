@@ -30,7 +30,7 @@ namespace NetEbics.Commands
         private IList<string> _segments;
         private string _transactionId;
 
-        protected abstract XDocument Params { get; }
+        protected abstract XDocument _Params { get; }
         protected abstract string SecurityMedium { get; }
 
         internal override string OrderAttribute => "OZHNN";
@@ -143,7 +143,7 @@ namespace NetEbics.Commands
                 {
                     //XNamespace nsEBICS = Namespaces.Ebics;
 
-                    var hvdDoc = Params;
+                    var hvdDoc = _Params;
                     s_logger.LogDebug("Created {OrderType} document:\n{doc}", OrderType, hvdDoc.ToString());
 
                     var userSigData = CreateUserSigData(hvdDoc);
@@ -178,10 +178,11 @@ namespace NetEbics.Commands
                                     ebics.ItemsChoiceType3.Timestamp,
                                     ebics.ItemsChoiceType3.PartnerID,
                                     ebics.ItemsChoiceType3.UserID,
-                                    ebics.ItemsChoiceType3.SecurityMedium,
-                                    ebics.ItemsChoiceType3.NumSegments,
+                                    ebics.ItemsChoiceType3.Product,
                                     ebics.ItemsChoiceType3.OrderDetails,
-                                    ebics.ItemsChoiceType3.BankPubKeyDigests
+                                    ebics.ItemsChoiceType3.BankPubKeyDigests,
+                                    ebics.ItemsChoiceType3.SecurityMedium,
+                                    ebics.ItemsChoiceType3.NumSegments
                                 },
                                 Items = new object[]
                                 {
@@ -189,15 +190,21 @@ namespace NetEbics.Commands
                                     DateTime.UtcNow,
                                     Config.User.PartnerId,
                                     Config.User.UserId,
-                                    SecurityMedium,
-                                    segments.Count.ToString(),
+                                    new ebics.StaticHeaderTypeProduct
+                                    {
+                                        InstituteID = "BL Banking",
+                                        Language = "EN",
+                                        Value = "BL Banking"
+                                    },
                                     new ebics.StaticHeaderOrderDetailsType
                                     {
                                         OrderType=new ebics.StaticHeaderOrderDetailsTypeOrderType{Value=OrderType},
                                         OrderAttribute=(ebics.OrderAttributeType)Enum.Parse(typeof(ebics.OrderAttributeType),this.OrderAttribute),
-                                        OrderParams=Params,
+                                        OrderParams=new ebics.GenericOrderParamsType(),
                                     },
-                                    Config.Bank.pubkeydigests
+                                    Config.Bank.pubkeydigests,
+                                    SecurityMedium,
+                                    segments.Count.ToString(),
                                 }
                             },
                             mutable = new ebics.MutableHeaderType { TransactionPhase = ebics.TransactionPhaseType.Initialisation }
@@ -217,6 +224,7 @@ namespace NetEbics.Commands
                                                 Value=Config.Bank.CryptKeys.Digest,
                                                 Version=Config.Bank.CryptKeys.Version.ToString()
                                             },
+                                            TransactionKey=EncryptRsa(_transactionKey)
                                         },
                                         new ebics.DataTransferRequestTypeSignatureData
                                         {
@@ -228,7 +236,7 @@ namespace NetEbics.Commands
                         }
                     };
 
-                    return (request: Authenticate(initReq, Params.GetType()), segments: segments);
+                    return (request: Authenticate(initReq,typeof(ebics.GenericOrderParamsType)), segments: segments);
                 }
                 catch (EbicsException)
                 {

@@ -152,8 +152,8 @@ namespace NetEbics.Commands
                     TechnicalReturnCode = techCode,
                     NumSegments = numSegments,
                     SegmentNumber = segmentNo,
-                    LastSegment = lastSegment??true,
-                    TransactionId = Convert.ToBase64String(ebr.header.@static.TransactionID),
+                    LastSegment = lastSegment ?? true,
+                    TransactionId = ebr.header.@static.TransactionID==null?null:Convert.ToBase64String(ebr.header.@static.TransactionID),
                     Phase = transPhase,
                     ReportText = ebr.header.mutable.ReportText
                 };
@@ -364,7 +364,7 @@ namespace NetEbics.Commands
             }
         }
 
-        byte[] CanonicalizeAndDigest(XmlNodeList nodeList,bool dotraverser=true)
+        byte[] CanonicalizeAndDigest(XmlNodeList nodeList, bool dotraverser = true)
         {
             var encoding = System.Text.Encoding.UTF8;
             var transform = new XmlDsigC14NTransform();
@@ -498,7 +498,7 @@ namespace NetEbics.Commands
                 throw new Exception("invalid transform");
             if (reference.DigestValue.SequenceEqual(digest) == false)
                 throw new Exception("invalid digest");
-            var _digest = CanonicalizeAndDigest(signatureXml.SelectNodes("//*[local-name()='SignedInfo']"),true);
+            var _digest = CanonicalizeAndDigest(signatureXml.SelectNodes("//*[local-name()='SignedInfo']"), true);
             if (signKey.VerifyHash(_digest, signature.SignatureValue.Value, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1) == false)
                 throw new Exception("invalid signature");
         }
@@ -652,13 +652,11 @@ namespace NetEbics.Commands
             var userSigData = new ebics.UserSignatureDataSigBookType
             {
                 Items = new object[] {
-                    new ebics.OrderSignatureDataType[]{
                         new ebics.OrderSignatureDataType
                         {
                             PartnerID = Config.User.PartnerId,
                             UserID = Config.User.UserId,
                         }
-                    }
                 }
             };
             return SignData(userSigData, Encoding.UTF8.GetBytes(xmlStr), Config.User.SignKeys);

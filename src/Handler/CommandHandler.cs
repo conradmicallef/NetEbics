@@ -86,6 +86,12 @@ namespace NetEbics.Handler
                     case HevParams hev:
                         cmd = new HevCommand { Params = hev, Config = Config };
                         break;
+                    case XxcParams xxc:
+                        cmd = new XxcCommand { Params = xxc, Config = Config };
+                        break;
+                    case CctParams cct:
+                        cmd = new CctCommand { Params = cct, Config = Config };
+                        break;
                     default:
                         throw new NotImplementedException();
                 }

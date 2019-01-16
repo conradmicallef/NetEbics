@@ -16,12 +16,12 @@
     <DebugType>none</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="src\Commands\CctCommand.cs" />
     <Compile Remove="src\Commands\CddCommand.cs" />
     <Compile Remove="src\Commands\GenericCommand.cs" />
     <Compile Remove="src\Commands\GenericEbicsCommand.cs" />
     <Compile Remove="src\Commands\GenericEbicsDCommand.cs" />
     <Compile Remove="src\Commands\GenericEbicsUCommand.cs" />
+    <Compile Remove="src\Commands\OldCctCommand.cs" />
     <Compile Remove="src\Commands\OldPtkCommand.cs" />
     <Compile Remove="src\Commands\OldSprCommand.cs" />
     <Compile Remove="src\Commands\OldStaCommand.cs" />
@@ -70,6 +70,36 @@
     <ProjectReference Include="..\Zlib.Portable\src\Zlib.Portable\Zlib.Portable.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="src\Xsd\H004\ebics_H004.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="src\Xsd\H004\ebics_hev.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="src\Xsd\H004\ebics_keymgmt_request_H004.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="src\Xsd\H004\ebics_keymgmt_response_H004.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="src\Xsd\H004\ebics_orders_H004.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="src\Xsd\H004\ebics_request_H004.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="src\Xsd\H004\ebics_response_H004.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="src\Xsd\H004\ebics_signature.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="src\Xsd\H004\ebics_types_H004.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="src\Xsd\H004\xmldsig-core-schema.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="src\Xsd\H005\ebics_H005.xsd">
       <Generator>xsd</Generator>
     </None>

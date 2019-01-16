@@ -6,13 +6,9 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-using System.Collections.Generic;
-using System.Xml.Linq;
-
-namespace NetEbics.Parameters
+namespace NetEbics.Responses
 {
-    public class CctParams : Params
+    public class XxcResponse : Response
     {
-        public XDocument document { get; set; }
     }
 }

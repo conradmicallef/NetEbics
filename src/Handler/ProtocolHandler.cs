@@ -8,10 +8,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using System.Xml.Schema;
 using Microsoft.Extensions.Logging;
 using NetEbics.Commands;
 using NetEbics.Exceptions;
@@ -133,6 +136,27 @@ namespace NetEbics.Handler
 
                 if (initReq != null)
                 {
+                    //validate xsd
+                    var xset = new XmlSchemaSet();
+                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_H004.xsd");
+                    xset.Add("http://www.ebics.org/H000", "src/xsd/H004/ebics_hev.xsd");
+                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_keymgmt_request_H004.xsd");
+                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_keymgmt_response_H004.xsd");
+                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_orders_H004.xsd");
+                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_request_H004.xsd");
+                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_response_H004.xsd");
+                    xset.Add("http://www.ebics.org/S001", "src/xsd/H004/ebics_signature.xsd");
+                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_types_H004.xsd");
+                    XmlReaderSettings s = new XmlReaderSettings { DtdProcessing = DtdProcessing.Parse };
+                    var xr = XmlReader.Create(File.OpenRead("src/xsd/H004/xmldsig-core-schema.xsd"), s);
+                    xset.Add("http://www.w3.org/2000/09/xmldsig#",xr);
+                    xset.Compile();
+                    List<ValidationEventArgs> errors = new List<ValidationEventArgs>();
+                    initReq.Schemas = xset;
+                    initReq.Validate((a, v) => { errors.Add(v); });
+                    if (errors.Any())
+                        throw new Exception("Schema Validation Failed");
+
                     var payload = Send(ctx, initReq.OuterXml);
                     var dr = ctx.Cmd.Deserialize(payload);
                     UpdateCtx(ctx, dr);

@@ -37,6 +37,6 @@ namespace NetEbics
         HaaResponse HAA(HaaParams p);
         HkdResponse HKD(HkdParams p);
         HevResponse HEV(HevParams p);
-
+        XxcResponse XXC(XxcParams p);
     }
 }

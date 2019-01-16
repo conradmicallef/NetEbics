@@ -11,7 +11,7 @@ using System.Xml.Linq;
 
 namespace NetEbics.Parameters
 {
-    public class CctParams : Params
+    public class XxcParams : Params
     {
         public XDocument document { get; set; }
     }

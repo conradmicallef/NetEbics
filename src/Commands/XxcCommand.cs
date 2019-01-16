@@ -13,17 +13,17 @@ using ebics = ebicsxml.H004;
 
 namespace NetEbics.Commands
 {
-    internal class CctCommand : UCommand
+    internal class XxcCommand : UCommand
     {
-        internal CctParams Params;
+        internal XxcParams Params;
         //protected override object _Params => Params.ebics;
         protected override XDocument _Params => Params.document;
 
         protected override string SecurityMedium => Params.SecurityMedium;
 
-        internal override string OrderType => "CCT";
+        internal override string OrderType => "XXC";
 
-        public CctResponse Response = new CctResponse();
+        public XxcResponse Response = new XxcResponse();
 
         internal override DeserializeResponse Deserialize(string payload)
         {

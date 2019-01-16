@@ -225,5 +225,13 @@ namespace NetEbics
                 return resp;
             }
         }
+        public XxcResponse XXC(XxcParams p)
+        {
+            using (new MethodLogger(Logger))
+            {
+                var resp = _commandHandler.Send<XxcResponse>(p);
+                return resp;
+            }
+        }
     }
 }
