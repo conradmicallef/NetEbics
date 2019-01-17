@@ -190,12 +190,7 @@ namespace NetEbics.Commands
                                     DateTime.UtcNow,
                                     Config.User.PartnerId,
                                     Config.User.UserId,
-                                    new ebics.StaticHeaderTypeProduct
-                                    {
-                                        InstituteID = "BL Banking",
-                                        Language = "EN",
-                                        Value = "BL Banking"
-                                    },
+                                    Config.StaticHeaderTypeProduct,
                                     new ebics.StaticHeaderOrderDetailsType
                                     {
                                         OrderType=new ebics.StaticHeaderOrderDetailsTypeOrderType{Value=OrderType},

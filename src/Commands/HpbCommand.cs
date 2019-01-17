@@ -147,14 +147,7 @@ namespace NetEbics.Commands
                                 Timestamp=DateTime.UtcNow,
                                 PartnerID=Config.User.PartnerId,
                                 UserID=Config.User.UserId,
-#if DEBUG
-                                Product = new ebics.ProductElementType
-                                {
-                                    InstituteID = "BL Banking",
-                                    Language = "EN",
-                                    Value = "BL Banking"
-                                },
-#endif
+                                Product=Config.ProductElementType,
                                 SecurityMedium = Params.SecurityMedium,
                                 OrderDetails=new ebics.NoPubKeyDigestsReqOrderDetailsType
                                 {

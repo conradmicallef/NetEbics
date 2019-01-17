@@ -54,16 +54,7 @@ namespace NetEbics.Commands
                         SignaturePubKeyInfo = new ebics.SignaturePubKeyInfoType
                         {
                             SignatureVersion = "A005",
-                            PubKeyValue = new ebics.PubKeyValueType1
-                            {
-                                TimeStamp = Config.User.SignKeys.TimeStamp.Value,
-                                TimeStampSpecified = true,
-                                RSAKeyValue = new ebics.RSAKeyValueType
-                                {
-                                    Modulus = Config.User.SignKeys.Modulus,
-                                    Exponent = Config.User.SignKeys.Exponent
-                                }
-                            }
+                            PubKeyValue = Config.User.SignKeys.PubKeyValueType1,
                         },
                     };
                     var doc = XMLSerializeToDocument(userSigData).OuterXml;
@@ -81,14 +72,7 @@ namespace NetEbics.Commands
                                 HostID = Config.User.HostId,
                                 PartnerID = Config.User.PartnerId,
                                 UserID=Config.User.UserId,
-#if DEBUG
-                                Product=new ebics.ProductElementType
-                                {
-                                    InstituteID="BL Banking",
-                                    Language="EN",
-                                    Value="BL Banking"
-                                },
-#endif
+                                Product = Config.ProductElementType,
                                 SecurityMedium = Params.SecurityMedium,
                                 OrderDetails = new ebics.UnsecuredReqOrderDetailsType
                                 {

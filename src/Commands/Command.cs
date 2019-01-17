@@ -689,12 +689,15 @@ namespace NetEbics.Commands
         }
         protected byte[] SignData(byte[] data, SignKeyPair kp)
         {
-            if (kp.Version != SignVersion.A005)
+            switch (kp.Version)
             {
-                throw new CryptographicException($"Only signature version {SignVersion.A005} is supported right now");
+                case SignVersion.A005:
+                    return kp.PrivateKey.SignData(data, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                case SignVersion.A006:
+                    return kp.PrivateKey.SignData(data, HashAlgorithmName.SHA256, RSASignaturePadding.Pss);
+                default:
+                    throw new CryptographicException("Signature version not supported");
             }
-
-            return kp.PrivateKey.SignData(data, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         }
 
         public override string ToString()

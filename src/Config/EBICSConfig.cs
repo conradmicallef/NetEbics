@@ -14,12 +14,36 @@ namespace NetEbics.Config
     public class EbicsConfig
     {
         private static readonly Stateprinter _printer;
-        
+
         public string Address { get; set; }
         public bool TLS { get; set; }
         public bool Insecure { get; set; }
         public UserParams User { get; set; }
         public BankParams Bank { get; set; }
+        public string Vendor = "BL Banking";
+        public ebicsxml.H004.StaticHeaderTypeProduct StaticHeaderTypeProduct
+        {
+            get {
+                return new ebicsxml.H004.StaticHeaderTypeProduct
+                {
+                    InstituteID = Vendor,
+                    Language = "EN",
+                    Value = Vendor
+                };
+            }
+        }
+        public ebicsxml.H004.ProductElementType ProductElementType
+        {
+            get {
+                return new ebicsxml.H004.ProductElementType
+                {
+                    InstituteID = Vendor,
+                    Language = "EN",
+                    Value = Vendor
+                };
+            }
+        }
+
 
         static EbicsConfig()
         {

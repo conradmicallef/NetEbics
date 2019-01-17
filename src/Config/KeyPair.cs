@@ -109,6 +109,37 @@ namespace NetEbics.Config
             }
         }
 
+        public ebicsxml.H004.PubKeyValueType PubKeyValueType { get
+            {
+                return new ebicsxml.H004.PubKeyValueType
+                {
+                    TimeStamp = TimeStamp.Value,
+                    TimeStampSpecified = true,
+                    RSAKeyValue = new ebicsxml.H004.RSAKeyValueType
+                    {
+                        Modulus = Modulus,
+                        Exponent = Exponent
+                    }
+                };
+            }
+        }
+        public ebicsxml.H004.PubKeyValueType1 PubKeyValueType1
+        {
+            get
+            {
+                return new ebicsxml.H004.PubKeyValueType1
+                {
+                    TimeStamp = TimeStamp.Value,
+                    TimeStampSpecified = true,
+                    RSAKeyValue = new ebicsxml.H004.RSAKeyValueType
+                    {
+                        Modulus = Modulus,
+                        Exponent = Exponent
+                    }
+                };
+            }
+        }
+
         public DateTime? TimeStamp { get; set; }
 
         public T Version { get; set; }

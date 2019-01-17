@@ -54,51 +54,14 @@ namespace NetEbics.Commands
                         AuthenticationPubKeyInfo = new ebics.AuthenticationPubKeyInfoType
                         {
                             AuthenticationVersion = "X002",
-                            PubKeyValue = new ebics.PubKeyValueType
-                            {
-                                TimeStamp = Config.User.AuthKeys.TimeStamp.Value,
-                                TimeStampSpecified = true,
-                                RSAKeyValue = new ebics.RSAKeyValueType
-                                {
-                                    Modulus = Config.User.AuthKeys.Modulus,
-                                    Exponent = Config.User.AuthKeys.Exponent
-                                }
-                            }
+                            PubKeyValue = Config.User.AuthKeys.PubKeyValueType,
                         },
                         EncryptionPubKeyInfo = new ebics.EncryptionPubKeyInfoType
                         {
                             EncryptionVersion = "E002",
-                            PubKeyValue = new ebics.PubKeyValueType
-                            {
-                                TimeStamp = Config.User.CryptKeys.TimeStamp.Value,
-                                TimeStampSpecified = true,
-                                RSAKeyValue = new ebics.RSAKeyValueType
-                                {
-                                    Modulus = Config.User.CryptKeys.Modulus,
-                                    Exponent = Config.User.CryptKeys.Exponent
-                                }
-                            }
+                            PubKeyValue = Config.User.CryptKeys.PubKeyValueType,
                         }
                     };
-
-                    //var hiaOrderData = new HiaRequestOrderData
-                    //{
-                    //    Namespaces = Namespaces,
-                    //    PartnerId = Config.User.PartnerId,
-                    //    UserId = Config.User.UserId,
-                    //    AuthInfo = new AuthenticationPubKeyInfo
-                    //    {
-                    //        Namespaces = Namespaces,
-                    //        AuthKeys = Config.User.AuthKeys,
-                    //        UseEbicsDefaultNamespace = true
-                    //    },
-                    //    EncInfo = new EncryptionPubKeyInfo
-                    //    {
-                    //        Namespaces = Namespaces,
-                    //        CryptKeys = Config.User.CryptKeys,
-                    //        UseEbicsDefaultNamespace = true
-                    //    }
-                    //};
 
                     var compressed =
                         Compress(Encoding.UTF8.GetBytes(
@@ -114,14 +77,7 @@ namespace NetEbics.Commands
                                 HostID=Config.User.HostId,
                                 PartnerID=Config.User.PartnerId,
                                 UserID=Config.User.UserId,
-#if DEBUG
-                                Product = new ebics.ProductElementType
-                                {
-                                    InstituteID = "BL Banking",
-                                    Language = "EN",
-                                    Value = "BL Banking"
-                                },
-#endif
+                                Product=Config.ProductElementType,
                                 SecurityMedium = Params.SecurityMedium,
                                 OrderDetails=new ebics.UnsecuredReqOrderDetailsType
                                 {

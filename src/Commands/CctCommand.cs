@@ -29,7 +29,6 @@ namespace NetEbics.Commands
         {
             var ret = base.Deserialize(payload);
             UpdateResponse(Response, ret);
-//            Response.Data = XMLDeserialize<ebics.HVUResponseOrderDataType>(ResponseData);
             return ret;
         }
        

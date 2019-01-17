@@ -18,7 +18,6 @@ namespace NetEbics
         EbicsConfig Config { get; set; }
         HpbResponse HPB(HpbParams p);
         PtkResponse PTK(PtkParams p);
-        //StaResponse STA(StaParams p);
         CctResponse CCT(CctParams p);
         IniResponse INI(IniParams p);
         HiaResponse HIA(HiaParams p);

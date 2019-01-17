@@ -28,34 +28,6 @@
     <Compile Remove="src\Commands\SprCommand.cs" />
     <Compile Remove="src\Responses\EbicsResponse.cs" />
     <Compile Remove="src\Responses\EbicsResponseWithDocument.cs" />
-    <Compile Remove="src\Xml\AuthenticationPubKeyInfo.cs" />
-    <Compile Remove="src\Xml\BankPubKeyDigests.cs" />
-    <Compile Remove="src\Xml\Body.cs" />
-    <Compile Remove="src\Xml\CustomSignedXml.cs" />
-    <Compile Remove="src\Xml\DataEncryptionInfo.cs" />
-    <Compile Remove="src\Xml\DataTransfer.cs" />
-    <Compile Remove="src\Xml\EbicsNoPubKeyDigestsRequest.cs" />
-    <Compile Remove="src\Xml\EbicsRequest.cs" />
-    <Compile Remove="src\Xml\EbicsUnsecuredRequest.cs" />
-    <Compile Remove="src\Xml\EmptyOrderParams.cs" />
-    <Compile Remove="src\Xml\EncryptionPubKeyDigest.cs" />
-    <Compile Remove="src\Xml\EncryptionPubKeyInfo.cs" />
-    <Compile Remove="src\Xml\HiaRequestOrderData.cs" />
-    <Compile Remove="src\Xml\IXDocumentSerializer.cs" />
-    <Compile Remove="src\Xml\IXElementSerializer.cs" />
-    <Compile Remove="src\Xml\MutableHeader.cs" />
-    <Compile Remove="src\Xml\NamespaceAware.cs" />
-    <Compile Remove="src\Xml\OrderDetails.cs" />
-    <Compile Remove="src\Xml\OrderSignatureData.cs" />
-    <Compile Remove="src\Xml\SignatureData.cs" />
-    <Compile Remove="src\Xml\SignaturePubKeyOrderData.cs" />
-    <Compile Remove="src\Xml\StartEndDateOrderParams.cs" />
-    <Compile Remove="src\Xml\StaticHeader.cs" />
-    <Compile Remove="src\Xml\TransferReceipt.cs" />
-    <Compile Remove="src\Xml\UserSignatureData.cs" />
-    <Compile Remove="src\Xml\XDocumentExtensions.cs" />
-    <Compile Remove="src\Xml\XmlNames.cs" />
-    <Compile Remove="src\Xml\XPathHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BouncyCastle.NetCore" Version="1.8.3" />
@@ -108,7 +80,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="src\Xml\" />
     <Folder Include="src\Xsd\H004\" />
   </ItemGroup>
   <ItemGroup>
