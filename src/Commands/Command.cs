@@ -42,7 +42,7 @@ namespace NetEbics.Commands
         internal abstract XmlDocument ReceiptRequest { get; }
 
         //protected static string s_signatureAlg => "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
-        protected static string s_digestAlg => "http://www.w3.org/2001/04/xmlenc#sha256";
+        protected static string S_digestAlg => "http://www.w3.org/2001/04/xmlenc#sha256";
 
         protected void UpdateResponse(Response resp, DeserializeResponse dr)
         {

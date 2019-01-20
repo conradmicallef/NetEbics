@@ -28,7 +28,7 @@ namespace NetEbics.Commands
         private readonly byte[] _transactionKey;
         private XmlDocument _initReq;
         private IList<string> _segments;
-        private string _transactionId;
+        private byte[] _transactionId;
 
         protected abstract XDocument _Params { get; }
         protected abstract string SecurityMedium { get; }
@@ -69,7 +69,7 @@ namespace NetEbics.Commands
 
                     if (dr.Phase == TransactionPhase.Initialisation)
                     {
-                        _transactionId = dr.TransactionId;
+                        _transactionId = ebr.header.@static.TransactionID;
                     }
 
                     return dr;
@@ -108,7 +108,7 @@ namespace NetEbics.Commands
                             {
                                 HostID = Config.User.HostId,
                                 ItemsElementName = new ebics.ItemsChoiceType3[] { ebics.ItemsChoiceType3.TransactionID },
-                                Items = new string[] { _transactionId }
+                                Items = new object[] { _transactionId }
                             },
                             mutable = new ebics.MutableHeaderType
                             {
@@ -118,8 +118,14 @@ namespace NetEbics.Commands
                         },
                         body = new ebics.ebicsRequestBody
                         {
-                            Items = new object[]{new ebics.DataTransferRequestType{Items=new object[]{new ebics.DataTransferRequestTypeOrderData{
-                                Value=Convert.FromBase64String(segment) } } } }
+                            Items = new object[]{
+                                new ebics.DataTransferRequestType{
+                                    Items =new object[]{
+                                        new ebics.DataTransferRequestTypeOrderData{
+                                Value=Convert.FromBase64String(segment) }
+                                    }
+                                }
+                            }
                         },
                     }
                     ).Select(req => Authenticate(req, req.GetType())).ToList();
@@ -215,7 +221,7 @@ namespace NetEbics.Commands
                                         {
                                             EncryptionPubKeyDigest=new ebics.DataEncryptionInfoTypeEncryptionPubKeyDigest
                                             {
-                                                Algorithm=s_digestAlg,
+                                                Algorithm=S_digestAlg,
                                                 Value=Config.Bank.CryptKeys.Digest,
                                                 Version=Config.Bank.CryptKeys.Version.ToString()
                                             },
