@@ -138,18 +138,26 @@ namespace NetEbics.Handler
                 {
                     //validate xsd
                     var xset = new XmlSchemaSet();
-                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_H004.xsd");
-                    xset.Add("http://www.ebics.org/H000", "src/xsd/H004/ebics_hev.xsd");
-                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_keymgmt_request_H004.xsd");
-                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_keymgmt_response_H004.xsd");
-                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_orders_H004.xsd");
-                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_request_H004.xsd");
-                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_response_H004.xsd");
-                    xset.Add("http://www.ebics.org/S001", "src/xsd/H004/ebics_signature.xsd");
-                    xset.Add("urn:org:ebics:H004", "src/xsd/H004/ebics_types_H004.xsd");
-                    XmlReaderSettings s = new XmlReaderSettings { DtdProcessing = DtdProcessing.Parse };
-                    var xr = XmlReader.Create(File.OpenRead("src/xsd/H004/xmldsig-core-schema.xsd"), s);
-                    xset.Add("http://www.w3.org/2000/09/xmldsig#",xr);
+                    Func<string, XmlReader> readxml;
+                    Func<string, XmlReader> readxmldtd;
+                    Func<string, Stream> embeddedresource;
+                    XmlReaderSettings dtd = new XmlReaderSettings { DtdProcessing = DtdProcessing.Parse };
+                    XmlReaderSettings nodtd = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit};
+                    var ass = System.Reflection.Assembly.GetAssembly(typeof(State));
+                    embeddedresource = (rname) => ass.GetManifestResourceStream(rname);
+                    readxml = (fname) => XmlReader.Create(embeddedresource(fname),nodtd);
+                    readxmldtd = (fname) => XmlReader.Create(embeddedresource(fname), dtd);
+
+                    xset.Add("urn:org:ebics:H004", readxml("NetEbics.src.Xsd.H004.ebics_H004.xsd"));
+                    xset.Add("http://www.ebics.org/H000", readxml("NetEbics.src.Xsd.H004.ebics_hev.xsd"));
+                    xset.Add("urn:org:ebics:H004", readxml("NetEbics.src.Xsd.H004.ebics_keymgmt_request_H004.xsd"));
+                    xset.Add("urn:org:ebics:H004", readxml("NetEbics.src.Xsd.H004.ebics_keymgmt_response_H004.xsd"));
+                    xset.Add("urn:org:ebics:H004", readxml("NetEbics.src.Xsd.H004.ebics_orders_H004.xsd"));
+                    xset.Add("urn:org:ebics:H004", readxml("NetEbics.src.Xsd.H004.ebics_request_H004.xsd"));
+                    xset.Add("urn:org:ebics:H004", readxml("NetEbics.src.Xsd.H004.ebics_response_H004.xsd"));
+                    xset.Add("http://www.ebics.org/S001", readxml("NetEbics.src.Xsd.H004.ebics_signature.xsd"));
+                    xset.Add("urn:org:ebics:H004", readxml("NetEbics.src.Xsd.H004.ebics_types_H004.xsd"));
+                    xset.Add("http://www.w3.org/2000/09/xmldsig#", readxmldtd("NetEbics.src.Xsd.H004.xmldsig-core-schema.xsd"));
                     xset.Compile();
                     List<ValidationEventArgs> errors = new List<ValidationEventArgs>();
                     initReq.Schemas = xset;

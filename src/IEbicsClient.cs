@@ -15,7 +15,7 @@ namespace NetEbics
 {
     public interface IEbicsClient
     {
-        EbicsConfig Config { get; set; }
+        //EbicsConfig Config { get; set; }
         HpbResponse HPB(HpbParams p);
         PtkResponse PTK(PtkParams p);
         CctResponse CCT(CctParams p);

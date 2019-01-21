@@ -30,6 +30,78 @@
     <Compile Remove="src\Responses\EbicsResponseWithDocument.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="src\Xsd\H004\ebics_H004.xsd" />
+    <None Remove="src\Xsd\H004\ebics_hev.xsd" />
+    <None Remove="src\Xsd\H004\ebics_keymgmt_request_H004.xsd" />
+    <None Remove="src\Xsd\H004\ebics_keymgmt_response_H004.xsd" />
+    <None Remove="src\Xsd\H004\ebics_orders_H004.xsd" />
+    <None Remove="src\Xsd\H004\ebics_request_H004.xsd" />
+    <None Remove="src\Xsd\H004\ebics_response_H004.xsd" />
+    <None Remove="src\Xsd\H004\ebics_signature.xsd" />
+    <None Remove="src\Xsd\H004\ebics_types_H004.xsd" />
+    <None Remove="src\Xsd\H004\xmldsig-core-schema.xsd" />
+    <None Remove="src\Xsd\H005\ebics_H005.xsd" />
+    <None Remove="src\Xsd\H005\ebics_hev.xsd" />
+    <None Remove="src\Xsd\H005\ebics_keymgmt_request_H005.xsd" />
+    <None Remove="src\Xsd\H005\ebics_keymgmt_response_H005.xsd" />
+    <None Remove="src\Xsd\H005\ebics_orders_H005.xsd" />
+    <None Remove="src\Xsd\H005\ebics_request_H005.xsd" />
+    <None Remove="src\Xsd\H005\ebics_response_H005.xsd" />
+    <None Remove="src\Xsd\H005\ebics_signature_S002.xsd" />
+    <None Remove="src\Xsd\H005\ebics_types_H005.xsd" />
+    <None Remove="src\Xsd\H005\xmldsig-core-schema.xsd" />
+    <None Remove="src\Xsd\pain.001.001.03.xsd" />
+    <None Remove="src\Xsd\pain.002.001.03.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="src\Xsd\H004\ebics_H004.xsd">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\Xsd\H004\ebics_hev.xsd">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\Xsd\H004\ebics_keymgmt_request_H004.xsd">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\Xsd\H004\ebics_keymgmt_response_H004.xsd">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\Xsd\H004\ebics_orders_H004.xsd">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\Xsd\H004\ebics_request_H004.xsd">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\Xsd\H004\ebics_response_H004.xsd">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\Xsd\H004\ebics_signature.xsd">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\Xsd\H004\ebics_types_H004.xsd">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\Xsd\H004\xmldsig-core-schema.xsd">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\Xsd\H005\ebics_H005.xsd">
+      <Generator>xsd</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\Xsd\H005\ebics_hev.xsd" />
+    <EmbeddedResource Include="src\Xsd\H005\ebics_keymgmt_request_H005.xsd" />
+    <EmbeddedResource Include="src\Xsd\H005\ebics_keymgmt_response_H005.xsd" />
+    <EmbeddedResource Include="src\Xsd\H005\ebics_orders_H005.xsd" />
+    <EmbeddedResource Include="src\Xsd\H005\ebics_request_H005.xsd" />
+    <EmbeddedResource Include="src\Xsd\H005\ebics_response_H005.xsd" />
+    <EmbeddedResource Include="src\Xsd\H005\ebics_signature_S002.xsd" />
+    <EmbeddedResource Include="src\Xsd\H005\ebics_types_H005.xsd" />
+    <EmbeddedResource Include="src\Xsd\H005\xmldsig-core-schema.xsd" />
+    <EmbeddedResource Include="src\Xsd\pain.001.001.03.xsd">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\Xsd\pain.002.001.03.xsd" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="BouncyCastle.NetCore" Version="1.8.3" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
@@ -42,47 +114,9 @@
     <ProjectReference Include="..\Zlib.Portable\src\Zlib.Portable\Zlib.Portable.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="src\Xsd\H004\ebics_H004.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="src\Xsd\H004\ebics_hev.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="src\Xsd\H004\ebics_keymgmt_request_H004.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="src\Xsd\H004\ebics_keymgmt_response_H004.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="src\Xsd\H004\ebics_orders_H004.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="src\Xsd\H004\ebics_request_H004.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="src\Xsd\H004\ebics_response_H004.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="src\Xsd\H004\ebics_signature.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="src\Xsd\H004\ebics_types_H004.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="src\Xsd\H004\xmldsig-core-schema.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="src\Xsd\H005\ebics_H005.xsd">
-      <Generator>xsd</Generator>
-    </None>
-    <None Update="src\Xsd\pain.001.001.03.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="src\Xsd\H004\" />
-  </ItemGroup>
-  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.FileProviders.Embedded">
+      <HintPath>..\..\..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.extensions.fileproviders.embedded\2.1.1\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Embedded.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\newtonsoft.json\11.0.2\lib\netstandard2.0\Newtonsoft.Json.dll</HintPath>
     </Reference>

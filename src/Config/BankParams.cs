@@ -45,20 +45,20 @@ namespace NetEbics.Config
 
         public override string ToString() => _printer.PrintObject(this);
 
-        public void Save(string v)
+        public void Save(Action<string, byte[]> writebytes)
         {
-            AuthKeys.Save(v + "/AuthKeys");
-            CryptKeys.Save(v + "/CryptKeys");
+            AuthKeys.Save(bytes=>writebytes("BankAuthKeys.pubkey",bytes));
+            CryptKeys.Save(bytes=>writebytes("BankCryptKeys.pubkey",bytes));
         }
 
-        public void Load(string v)
+        public void Load(Func<string, byte[]> readbytes)
         {
             if (AuthKeys == null)
                 AuthKeys = new AuthKeyPair();
             if (CryptKeys == null)
                 CryptKeys = new CryptKeyPair();
-            AuthKeys.Load(v + "/AuthKeys");
-            CryptKeys.Load(v + "/CryptKeys");
+            AuthKeys.Load(readbytes("BankAuthKeys.pubkey"));
+            CryptKeys.Load(readbytes("BankCryptKeys.pubkey"));
 
         }
     }

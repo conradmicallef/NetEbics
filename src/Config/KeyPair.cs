@@ -176,22 +176,27 @@ namespace NetEbics.Config
             _printer = new Stateprinter(cfg);            
         }
 
-        public void Save(string filename)
+        public void Save(Action<byte[]> writebytes)
         {
-            Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters rsa = new Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters(false,
-                new Org.BouncyCastle.Math.BigInteger(1,Modulus),
-                new Org.BouncyCastle.Math.BigInteger(1,Exponent)
-                );
-            using (TextWriter sw = new StreamWriter(filename + ".pubkey"))
+            using (var ms = new MemoryStream())
             {
-                var pw = new PemWriter(sw);
-                pw.WriteObject(rsa);
-                sw.Flush();
+                Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters rsa = new Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters(false,
+                    new Org.BouncyCastle.Math.BigInteger(1, Modulus),
+                    new Org.BouncyCastle.Math.BigInteger(1, Exponent)
+                    );
+                using (TextWriter sw = new StreamWriter(ms))
+                {
+                    var pw = new PemWriter(sw);
+                    pw.WriteObject(rsa);
+                    sw.Flush();
+                }
+                writebytes(ms.ToArray());
             }
         }
-        public void Load(string filename)
+        public void Load(byte[] bytes)
         {
-            using (var sr = new StreamReader(filename + ".pubkey"))
+            using (var ms=new MemoryStream(bytes))
+            using (var sr = new StreamReader(ms))
             {
                 var pr = new PemReader(sr);
                 Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters rsa = (Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters)pr.ReadObject();

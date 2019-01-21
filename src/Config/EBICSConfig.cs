@@ -8,19 +8,24 @@
 
 using StatePrinting;
 using StatePrinting.OutputFormatters;
+using System;
+using System.IO;
 
 namespace NetEbics.Config
 {
-    public class EbicsConfig
+    internal class EbicsConfig
     {
         private static readonly Stateprinter _printer;
 
         public string Address { get; set; }
-        public bool TLS { get; set; }
-        public bool Insecure { get; set; }
         public UserParams User { get; set; }
         public BankParams Bank { get; set; }
+        //internal Func<string, Stream> readStream;
+        internal Func<string, Byte[]> readBytes;
+        //internal Func<string, Stream> writeStream;
+        internal Action<string, Byte[]> writeBytes;
         public string Vendor = "BL Banking";
+        //TODO move to helper
         public ebicsxml.H004.StaticHeaderTypeProduct StaticHeaderTypeProduct
         {
             get {
@@ -32,6 +37,7 @@ namespace NetEbics.Config
                 };
             }
         }
+        //TODO move to helper
         public ebicsxml.H004.ProductElementType ProductElementType
         {
             get {
@@ -43,14 +49,17 @@ namespace NetEbics.Config
                 };
             }
         }
-
-
         static EbicsConfig()
         {
             _printer = new Stateprinter();
             _printer.Configuration.SetNewlineDefinition("");
             _printer.Configuration.SetIndentIncrement(" ");
             _printer.Configuration.SetOutputFormatter(new JsonStyle(_printer.Configuration));
+        }
+        public void LoadBank()
+        {
+            Bank = new BankParams();
+            Bank.Load(readBytes);
         }
 
         public override string ToString() => _printer.PrintObject(this);

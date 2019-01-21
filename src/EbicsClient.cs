@@ -21,13 +21,65 @@ namespace NetEbics
     {
         private readonly Func<EbicsConfig, IEbicsClient> _ctor;
 
-        public EbicsClientFactory(Func<EbicsConfig, IEbicsClient> ctor)
+        internal EbicsClientFactory(Func<EbicsConfig, IEbicsClient> ctor)
         {
             _ctor = ctor;
         }
 
-        public IEbicsClient Create(EbicsConfig cfg)
+        internal IEbicsClient Create(EbicsConfig cfg)
         {
+            return _ctor(cfg);
+        }
+        public enum LoadStage
+        {
+            None=0,
+            Sign=1,
+            Auth=2,
+            Enc=3,
+            Bank=4,
+            All=4
+        }
+        public IEbicsClient Create( 
+            Func<string,byte[]> readBytes,
+            Action<string, byte[]> writeBytes,
+            string password,string address, string hostId, string partnerId, string userId, 
+            LoadStage loadStage=LoadStage.All)
+        {
+            var signCert= loadStage>=LoadStage.Sign?new System.Security.Cryptography.X509Certificates.X509Certificate2(readBytes("sign.p12"), password):null;
+            var authCert= loadStage >= LoadStage.Auth ? new System.Security.Cryptography.X509Certificates.X509Certificate2(readBytes("auth.p12"), password):null;
+            var encCert = loadStage >= LoadStage.Enc ? new System.Security.Cryptography.X509Certificates.X509Certificate2(readBytes("enc.p12"), password):null;
+            var cfg=new EbicsConfig
+            {
+                readBytes=readBytes,
+                writeBytes=writeBytes,
+
+                Address = address,
+                User = new UserParams
+                {
+                    HostId = hostId,
+                    PartnerId = partnerId,
+                    UserId = userId,
+                    SignKeys = new SignKeyPair
+                    {
+                        Version = SignVersion.A005,
+                        Certificate = signCert
+                    },
+                    AuthKeys = new AuthKeyPair
+                    {
+                        Version = AuthVersion.X002,
+                        Certificate = authCert
+                    },
+                    CryptKeys = new CryptKeyPair
+                    {
+                        Version = CryptVersion.E002,
+                        Certificate = encCert
+                    }
+                }
+            };
+            if (loadStage >= LoadStage.Bank)
+            {
+                cfg.LoadBank();
+            }
             return _ctor(cfg);
         }
     }
@@ -40,7 +92,7 @@ namespace NetEbics
         private readonly ProtocolHandler _protocolHandler;
         private readonly CommandHandler _commandHandler;
 
-        public EbicsConfig Config
+        internal EbicsConfig Config
         {
             get => _config;
             set

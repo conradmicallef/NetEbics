@@ -40,6 +40,7 @@ namespace NetEbics
             Authentication=1,
             Encryption=2
         }
+        //TODO change to functors
         public static X509Certificate CreateX509Certificate2(AsymmetricCipherKeyPair kp, string issuer, DateTime notBefore, DateTime notAfter, KeyType keyUsage, string filename, string password)
         {
             var random = new SecureRandom();
@@ -112,6 +113,7 @@ namespace NetEbics
             }
             return cert;
         }
+        //Todo CHANGE TO FUNCTORS
         public static String Letter<T>(string hostId, string bankName, string userId, string username, string partnerId, X509Certificate certificate, string filename) where T : Letter, new()
         {
             var letter = new T() { hostId = hostId, bankName = bankName, userId = userId, username = username, partnerId = partnerId };
@@ -119,6 +121,7 @@ namespace NetEbics
             File.WriteAllText(filename, letter.sb.ToString());
             return letter.sb.ToString();
         }
+        //Todo CHANGE TO FUNCTORS
         public static String LetterDE<T>(string hostId, string bankName, string userId, string username, string partnerId, X509Certificate certificate, string filename) where T : Letter, new()
         {
             var letter = new T() { hostId = hostId, bankName = bankName, userId = userId, username = username, partnerId = partnerId };
