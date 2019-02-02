@@ -6,8 +6,34 @@ using System.Text.RegularExpressions;
 
 namespace NetEbics.Swift
 {
-    public class MT940
+    public static class MT940
     {
+        public static List<Record> Parse(string source)
+        {
+            var ret = new List<Record>();
+            Record rec = new Record();
+            foreach (var line in MT940.LineJoiner(source.Split('\r')))
+            {
+                if (!rec.loadline(line))
+                {
+                    if (rec.mandatory())
+                        ret.Add(rec);
+                    rec = new Record();
+                }
+            };
+            if (rec.mandatory())
+                ret.Add(rec);
+            return ret;
+        }
+        public static IEnumerable<Tuple<F61,F86>> Tupleize(this Record rec)
+        {
+            if (rec.L61.Count != rec.L86.Count)
+                throw new Exception("Bad MT940");
+            for (int i=0;i<rec.L61.Count;i++)
+            {
+                yield return new Tuple<F61, F86>(rec.L61[i], rec.L86[i]);
+            }
+        }
         public static IEnumerable<string> LineJoiner(IEnumerable<string> source)
         {
             string prevLine = null;
