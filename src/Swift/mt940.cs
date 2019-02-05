@@ -152,7 +152,7 @@ namespace NetEbics.Swift
             public string TRXCODE { get; private set; }
             public string journal_no { get; private set; }
             public string posting { get; private set; }
-            public string RemInfo { get; private set; }
+            public Dictionary<string,string> RemInfo { get; private set; }
             public string BIC { get; private set; }
             public string IBAN { get; private set; }
             public string Payer_Name { get; private set; }
@@ -177,7 +177,9 @@ namespace NetEbics.Swift
                             journal_no = operand; break;
                         case int n1 when (n1 >= 20 && n1 <= 29):
                         case int n2 when (n2 >= 60 && n2 <= 63):
-                            RemInfo += operand+"\r\n"; break;
+                            var o = operand.Split('+', 2);
+                            RemInfo.Add(o[0],o[1]);
+                            break;
                         case 30:
                             BIC = operand; break;
                         case 31:
