@@ -12,7 +12,7 @@ namespace NetEbics.Swift
         {
             var ret = new List<Record>();
             Record rec = new Record();
-            foreach (var line in MT940.LineJoiner(source.Split('\r')))
+            foreach (var line in LineJoiner(source.Replace("\r\n","\r").Split('\r')))
             {
                 if (!rec.loadline(line))
                 {
@@ -124,6 +124,7 @@ namespace NetEbics.Swift
             public string refaccount { get; set; }
             public string srvaccount { get; set; }
             public string suppl { get; set; }
+            public F61():base(string.Empty) { throw new NotImplementedException(); }
             public F61(string op) : base(op)
             {
                 value_date = TakeM(6);
@@ -148,7 +149,6 @@ namespace NetEbics.Swift
         }
         public class F86
         {
-
             public string TRXCODE { get; private set; }
             public string journal_no { get; private set; }
             public string posting { get; private set; }
@@ -157,6 +157,7 @@ namespace NetEbics.Swift
             public string IBAN { get; private set; }
             public string Payer_Name { get; private set; }
             public string SepaCode { get; private set; }
+            public F86() { throw new NotImplementedException(); }
             public F86(string data)
             {
                 TRXCODE = data.Substring(0, 3);
