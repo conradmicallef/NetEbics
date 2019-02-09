@@ -35,7 +35,12 @@ namespace NetEbics.Swift
                     case int n2 when (n2 >= 60 && n2 <= 63):
                         var o = operand.Split('+', 2);
                         if (o.Length == 2)
-                            RemInfo.Add(o[0], o[1]);
+                        {
+                            if (RemInfo.ContainsKey(o[0]))
+                                RemInfo[o[0]] += o[1];
+                            else
+                                RemInfo.Add(o[0], o[1]);
+                        }
                         else
                             RemInfo.Add(fno.ToString(), operand);
                         break;
