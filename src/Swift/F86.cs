@@ -19,6 +19,7 @@ namespace NetEbics.Swift
             TRXCODE = data.Substring(0, 3);
             data = data.Substring(3);
             var lines = data.Split('?');
+            string lastreminfo=string.Empty;
             foreach (var line in lines)
             {
                 if (line.Length == 0)
@@ -36,11 +37,14 @@ namespace NetEbics.Swift
                         var o = operand.Split('+', 2);
                         if (o.Length == 2)
                         {
+                            lastreminfo = o[0];
                             if (RemInfo.ContainsKey(o[0]))
                                 RemInfo[o[0]] += o[1];
                             else
                                 RemInfo.Add(o[0], o[1]);
                         }
+                        else if (!string.IsNullOrEmpty(lastreminfo))
+                            RemInfo[lastreminfo] += operand;
                         else
                             RemInfo.Add(fno.ToString(), operand);
                         break;
